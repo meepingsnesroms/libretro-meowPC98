@@ -11,10 +11,10 @@ INCFLAGS += -I$(NP2_PATH) \
 	-I$(NP2_PATH)/i286c \
 	-I$(NP2_PATH)/io \
 	-I$(NP2_PATH)/mem \
-	-I$(NP2_PATH)/sdl2 \
 	-I$(NP2_PATH)/sound \
 	-I$(NP2_PATH)/vram \
 	-I$(NP2_PATH)/libretro \
+   -I$(NP2_PATH)/libretro/shim \
 	-I$(NP2_PATH)/libretro/libretro-common/include
 
 SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
@@ -40,10 +40,9 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(wildcard $(NP2_PATH)/io/*.c) \
 		$(wildcard $(NP2_PATH)/lio/*.c) \
 		$(wildcard $(NP2_PATH)/mem/*.c) \
-		$(wildcard $(NP2_PATH)/sdl2/*.c) \
-		$(wildcard $(NP2_PATH)/sdl2/*.cpp) \
 		$(wildcard $(NP2_PATH)/sound/*.c) \
 		$(wildcard $(NP2_PATH)/sound/getsnd/*.c) \
 		$(wildcard $(NP2_PATH)/sound/vermouth/*.c) \
 		$(wildcard $(NP2_PATH)/vram/*.c) \
+		$(wildcard $(NP2_PATH)/libretro/shim/*.c) \
 	)

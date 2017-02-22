@@ -1,0 +1,9 @@
+Files that need fixing:
+shim/taskmng.c
+shim/soundmng.cpp
+shim/sdlkbd.c
+shim/scrnmng.c
+shim/np2.c
+shim/inputmng.c
+shim/fontmng.c
+shim/dosio.c
