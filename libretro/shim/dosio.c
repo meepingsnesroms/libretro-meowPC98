@@ -4,6 +4,7 @@
 #include "dosio.h"
 
 #include <streams/file_stream.h>
+#include <file/file_path.h>
 
 static	char	curpath[MAX_PATH] = "./";
 static	char	*curfilep = curpath + 2;
@@ -11,53 +12,44 @@ static	char	*curfilep = curpath + 2;
 /* ÉtÉ@ÉCÉãëÄçÏ */
 FILEH file_open(const char *path) {
 
-	//return(fopen(path, "rb+"));
    return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
 }
 
 FILEH file_open_rb(const char *path) {
 
-	//return(fopen(path, "rb"));
    return(filestream_open(path, RFILE_MODE_READ, 0));
 }
 
 FILEH file_create(const char *path) {
 
-	return(fopen(path, "wb+"));
+   filestream_write_file(path, NULL /*data*/, 0 /*size*/);
+   return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
 }
 
 long file_seek(FILEH handle, long pointer, int method) {
 
-	fseek(handle, pointer, method);
-	return(ftell(handle));
+   return(filestream_seek(handle, pointer, method));
 }
 
 UINT file_read(FILEH handle, void *data, UINT length) {
 
-	return((UINT)fread(data, 1, length, handle));
+	return((UINT)filestream_read(handle, data, length));
 }
 
 UINT file_write(FILEH handle, const void *data, UINT length) {
 
-	return((UINT)fwrite(data, 1, length, handle));
+	return((UINT)filestream_write(handle, data, length));
 }
 
 short file_close(FILEH handle) {
 
-	//fclose(handle);
    filestream_close(handle);
 	return(0);
 }
 
 UINT file_getsize(FILEH handle) {
 
-	struct stat sb;
-
-	if (fstat(fileno(handle), &sb) == 0)
-	{
-		return (UINT)sb.st_size;
-	}
-	return(0);
+	return(filestream_get_size(handle));
 }
 
 short file_attr(const char *path) {
@@ -122,7 +114,7 @@ short file_delete(const char *path) {
 
 short file_dircreate(const char *path) {
 
-	return((short)mkdir(path, 0777));
+	return((short)path_mkdir(path));
 }
 
 
