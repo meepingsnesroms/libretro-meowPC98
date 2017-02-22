@@ -5,6 +5,8 @@
 
 #include <streams/file_stream.h>
 #include <file/file_path.h>
+#include <retro_dirent.h>
+#include <retro_stat.h>
 
 static	char	curpath[MAX_PATH] = "./";
 static	char	*curfilep = curpath + 2;
@@ -54,7 +56,8 @@ UINT file_getsize(FILEH handle) {
 
 short file_attr(const char *path) {
 
-struct stat	sb;
+   /*
+   struct stat	sb;
 	short	attr;
 
 
@@ -72,6 +75,11 @@ struct stat	sb;
 		return(attr);
 	}
 	return(-1);
+   */
+   
+   if (path_is_directory(path)) {
+      return(FILEATTR_DIRECTORY);
+   }
 }
 
 static BRESULT cnv_sttime(time_t *t, DOSDATE *dosdate, DOSTIME *dostime) {
@@ -97,7 +105,8 @@ struct tm	*ftime;
 
 short file_getdatetime(FILEH handle, DOSDATE *dosdate, DOSTIME *dostime) {
 
-struct stat sb;
+   /*
+   struct stat sb;
 
 	if (fstat(fileno(handle), &sb) == 0) {
 		if (cnv_sttime(&sb.st_mtime, dosdate, dostime) == SUCCESS) {
@@ -105,6 +114,12 @@ struct stat sb;
 		}
 	}
 	return(-1);
+   */
+   
+   time_t fake;
+   memset(fake, 0, sizeof(time_t));
+   cnv_sttime(&fake, dosdate, dostime);
+   return(0);
 }
 
 short file_delete(const char *path) {
@@ -307,12 +322,6 @@ void file_cutseparator(char *path) {
 
 void file_setseparator(char *path, int maxlen) {
 
-	int		pos;
-
-	pos = (int)strlen(path);
-	if ((pos) && (path[pos-1] != '/') && ((pos + 2) < maxlen)) {
-		path[pos++] = '/';
-		path[pos] = '\0';
-	}
+   fill_pathname_slash(path, maxlen);
 }
 
