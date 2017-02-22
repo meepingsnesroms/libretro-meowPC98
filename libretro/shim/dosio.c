@@ -1,15 +1,9 @@
 #include "compiler.h"
 #include <sys/stat.h>
 #include <time.h>
-#if defined(WIN32) && defined(OSLANG_UTF8)
-#include "codecnv/codecnv.h"
-#endif
 #include "dosio.h"
-#if defined(WIN32)
-#include <direct.h>
-#else
-#include <dirent.h>
-#endif
+
+#include <streams/file_stream.h>
 
 static	char	curpath[MAX_PATH] = "./";
 static	char	*curfilep = curpath + 2;
@@ -17,35 +11,19 @@ static	char	*curfilep = curpath + 2;
 /* ƒtƒ@ƒCƒ‹‘€ì */
 FILEH file_open(const char *path) {
 
-#if defined(WIN32) && defined(OSLANG_UTF8)
-	char	sjis[MAX_PATH];
-	codecnv_utf8tosjis(sjis, sizeof(sjis), path, (UINT)-1);
-	return(fopen(sjis, "rb+"));
-#else
-	return(fopen(path, "rb+"));
-#endif
+	//return(fopen(path, "rb+"));
+   return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
 }
 
 FILEH file_open_rb(const char *path) {
 
-#if defined(WIN32) && defined(OSLANG_UTF8)
-	char	sjis[MAX_PATH];
-	codecnv_utf8tosjis(sjis, sizeof(sjis), path, (UINT)-1);
-	return(fopen(sjis, "rb"));
-#else
-	return(fopen(path, "rb"));
-#endif
+	//return(fopen(path, "rb"));
+   return(filestream_open(path, RFILE_MODE_READ, 0));
 }
 
 FILEH file_create(const char *path) {
 
-#if defined(WIN32) && defined(OSLANG_UTF8)
-	char	sjis[MAX_PATH];
-	codecnv_utf8tosjis(sjis, sizeof(sjis), path, (UINT)-1);
-	return(fopen(sjis, "wb+"));
-#else
 	return(fopen(path, "wb+"));
-#endif
 }
 
 long file_seek(FILEH handle, long pointer, int method) {
@@ -66,7 +44,8 @@ UINT file_write(FILEH handle, const void *data, UINT length) {
 
 short file_close(FILEH handle) {
 
-	fclose(handle);
+	//fclose(handle);
+   filestream_close(handle);
 	return(0);
 }
 
@@ -86,25 +65,11 @@ short file_attr(const char *path) {
 struct stat	sb;
 	short	attr;
 
-#if defined(WIN32) && defined(OSLANG_UTF8)
-	char	sjis[MAX_PATH];
-	codecnv_utf8tosjis(sjis, sizeof(sjis), path, (UINT)-1);
-	if (stat(sjis, &sb) == 0)
-#else
+
 	if (stat(path, &sb) == 0)
-#endif
+
 	{
-#if defined(WIN32)
-		if (sb.st_mode & _S_IFDIR) {
-			attr = FILEATTR_DIRECTORY;
-		}
-		else {
-			attr = 0;
-		}
-		if (!(sb.st_mode & S_IWRITE)) {
-			attr |= FILEATTR_READONLY;
-		}
-#else
+
 		if (S_ISDIR(sb.st_mode)) {
 			return(FILEATTR_DIRECTORY);
 		}
@@ -112,7 +77,6 @@ struct stat	sb;
 		if (!(sb.st_mode & S_IWUSR)) {
 			attr |= FILEATTR_READONLY;
 		}
-#endif
 		return(attr);
 	}
 	return(-1);
@@ -158,11 +122,7 @@ short file_delete(const char *path) {
 
 short file_dircreate(const char *path) {
 
-#if defined(WIN32)
-	return((short)mkdir(path));
-#else
 	return((short)mkdir(path, 0777));
-#endif
 }
 
 
@@ -210,90 +170,6 @@ short file_attr_c(const char *path) {
 	return(file_attr(curpath));
 }
 
-#if defined(WIN32)
-static BRESULT cnvdatetime(FILETIME *file, DOSDATE *dosdate, DOSTIME *dostime) {
-
-	FILETIME	localtime;
-	SYSTEMTIME	systime;
-
-	if ((FileTimeToLocalFileTime(file, &localtime) == 0) ||
-		(FileTimeToSystemTime(&localtime, &systime) == 0)) {
-		return(FAILURE);
-	}
-	if (dosdate) {
-		dosdate->year = (UINT16)systime.wYear;
-		dosdate->month = (UINT8)systime.wMonth;
-		dosdate->day = (UINT8)systime.wDay;
-	}
-	if (dostime) {
-		dostime->hour = (UINT8)systime.wHour;
-		dostime->minute = (UINT8)systime.wMinute;
-		dostime->second = (UINT8)systime.wSecond;
-	}
-	return(SUCCESS);
-}
-
-static BRESULT setflist(WIN32_FIND_DATA *w32fd, FLINFO *fli) {
-
-	if ((w32fd->dwFileAttributes & FILEATTR_DIRECTORY) &&
-		((!file_cmpname(w32fd->cFileName, ".")) ||
-		(!file_cmpname(w32fd->cFileName, "..")))) {
-		return(FAILURE);
-	}
-	fli->caps = FLICAPS_SIZE | FLICAPS_ATTR;
-	fli->size = w32fd->nFileSizeLow;
-	fli->attr = w32fd->dwFileAttributes;
-	if (cnvdatetime(&w32fd->ftLastWriteTime, &fli->date, &fli->time)
-																== SUCCESS) {
-		fli->caps |= FLICAPS_DATE | FLICAPS_TIME;
-	}
-#if defined(OSLANG_UTF8)
-	codecnv_sjistoutf8(fli->path, sizeof(fli->path),
-												w32fd->cFileName, (UINT)-1);
-#else
-	file_cpyname(fli->path, w32fd->cFileName, sizeof(fli->path));
-#endif
-	return(SUCCESS);
-}
-
-FLISTH file_list1st(const char *dir, FLINFO *fli) {
-
-	char			path[MAX_PATH];
-	HANDLE			hdl;
-	WIN32_FIND_DATA	w32fd;
-
-	file_cpyname(path, dir, sizeof(path));
-	file_setseparator(path, sizeof(path));
-	file_catname(path, "*.*", sizeof(path));
-	hdl = FindFirstFile(path, &w32fd);
-	if (hdl != INVALID_HANDLE_VALUE) {
-		do {
-			if (setflist(&w32fd, fli) == SUCCESS) {
-				return(hdl);
-			}
-		} while(FindNextFile(hdl, &w32fd));
-		FindClose(hdl);
-	}
-	return(FLISTH_INVALID);
-}
-
-BRESULT file_listnext(FLISTH hdl, FLINFO *fli) {
-
-	WIN32_FIND_DATA	w32fd;
-
-	while(FindNextFile(hdl, &w32fd)) {
-		if (setflist(&w32fd, fli) == SUCCESS) {
-			return(SUCCESS);
-		}
-	}
-	return(FAILURE);
-}
-
-void file_listclose(FLISTH hdl) {
-
-	FindClose(hdl);
-}
-#else
 FLISTH file_list1st(const char *dir, FLINFO *fli) {
 
 	DIR		*ret;
@@ -344,7 +220,6 @@ void file_listclose(FLISTH hdl) {
 
 	closedir((DIR *)hdl);
 }
-#endif
 
 void file_catname(char *path, const char *name, int maxlen) {
 

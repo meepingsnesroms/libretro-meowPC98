@@ -1,5 +1,5 @@
 
-typedef FILE *				FILEH;
+typedef  RFILE *				FILEH;
 #define	FILEH_INVALID		NULL
 
 #if defined(WIN32)
