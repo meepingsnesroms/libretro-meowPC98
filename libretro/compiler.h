@@ -13,6 +13,8 @@
 
 #include <boolean.h>
 
+#include "dumbsdl.h"
+
 #define	BYTESEX_LITTLE
 #define	OSLANG_UTF8
 #define	OSLINEBREAK_CRLF

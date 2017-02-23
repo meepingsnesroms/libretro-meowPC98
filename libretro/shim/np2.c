@@ -238,7 +238,7 @@ int np2_main(int argc, char *argv[]) {
 	scrnmng_destroy();
 	sysmenu_destroy();
 	TRACETERM();
-	//SDL_Quit();
+	SDL_Quit();
 	return(SUCCESS);
 
 np2main_err5:
@@ -254,7 +254,7 @@ np2main_err3:
 
 np2main_err2:
 	TRACETERM();
-	//SDL_Quit();
+	SDL_Quit();
 
 np2main_err1:
 	return(FAILURE);

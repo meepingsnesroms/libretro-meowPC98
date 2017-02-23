@@ -6,8 +6,10 @@
 #include	"menubase.h"
 #include	"sysmenu.h"
 
+#include "retro_miscellaneous.h"
 
-	BOOL	task_avail;
+
+BOOL	task_avail;
 
 
 void sighandler(int signo) {
@@ -15,7 +17,6 @@ void sighandler(int signo) {
 	(void)signo;
 	task_avail = FALSE;
 }
-
 
 void taskmng_initialize(void) {
 
@@ -50,16 +51,6 @@ void taskmng_rol(void) {
 					{
 						menubase_moving(e.button.x, e.button.y, 2);
 					}
-#if defined(__IPHONEOS__)
-					else if (SDL_IsTextInputActive())
-					{
-						SDL_StopTextInput();
-					}
-					else if (e.button.y >= 320)
-					{
-						SDL_StartTextInput();
-					}
-#endif
 					else
 					{
 						sysmenu_menuopen(0, e.button.x, e.button.y);
@@ -116,7 +107,8 @@ BOOL taskmng_sleep(UINT32 tick) {
 	base = GETTICK();
 	while((task_avail) && ((GETTICK() - base) < tick)) {
 		taskmng_rol();
-		SDL_Delay(1);
+		//SDL_Delay(1);
+      retro_sleep(1);
 	}
 	return(task_avail);
 }

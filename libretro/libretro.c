@@ -97,12 +97,12 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   info->geometry.base_width = 320;
-   info->geometry.base_height = 240;
-   info->geometry.max_width = 320;
-   info->geometry.max_height = 240;
+   info->geometry.base_width = 640;
+   info->geometry.base_height = 400;
+   info->geometry.max_width = 640;
+   info->geometry.max_height = 400;
    info->geometry.aspect_ratio = 4 / 3;
-   info->timing.fps = 72;
+   info->timing.fps = 60;
    info->timing.sample_rate = 44100;
 }
 
