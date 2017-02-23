@@ -1,11 +1,11 @@
 
 typedef struct {
-	UINT8	*ptr;
+	UINT8    *ptr;
 	int		xalign;
 	int		yalign;
 	int		width;
 	int		height;
-	UINT	bpp;
+	UINT     bpp;
 	int		extend;
 } SCRNSURF;
 
@@ -17,10 +17,13 @@ extern "C" {
 void scrnmng_setwidth(int posx, int width);
 #define scrnmng_setextend(e)
 void scrnmng_setheight(int posy, int height);
-const SCRNSURF *scrnmng_surflock(void);
-void scrnmng_surfunlock(const SCRNSURF *surf);
+//const SCRNSURF *scrnmng_surflock(void);
+//void scrnmng_surfunlock(const SCRNSURF *surf);
+   
+#define scrnmng_surflock()
+#define scrnmng_surfunlock(e)
 
-#define	scrnmng_isfullscreen()	(0)
+#define	scrnmng_isfullscreen()	(1)
 #define	scrnmng_haveextend()	(0)
 #define	scrnmng_getbpp()		(16)
 #define	scrnmng_allflash()		

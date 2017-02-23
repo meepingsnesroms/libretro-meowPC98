@@ -1,23 +1,14 @@
 #include	"compiler.h"
-// #include	<sys/time.h>
-// #include	<signal.h>
-// #include	<unistd.h>
 #include	"scrnmng.h"
 #include	"scrndraw.h"
 #include	"vramhdl.h"
 #include	"menubase.h"
 
-static SDL_Window *s_sdlWindow;
-static SDL_Renderer *s_renderer;
-static SDL_Texture *s_texture;
-static SDL_Surface *s_surface;
-
 typedef struct {
-	BOOL		enable;
+	BOOL        enable;
 	int			width;
 	int			height;
 	int			bpp;
-	SDL_Surface	*surface;
 	VRAMHDL		vram;
 } SCRNMNG;
 
@@ -28,7 +19,7 @@ typedef struct {
 
 static const char app_name[] = "Neko Project II";
 
-static	SCRNMNG		scrnmng;
+static	SCRNMNG	scrnmng;
 static	SCRNSTAT	scrnstat;
 static	SCRNSURF	scrnsurf;
 
@@ -41,6 +32,7 @@ typedef struct {
 	int		dstpos;
 } DRAWRECT;
 
+/*
 static BRESULT calcdrawrect(SDL_Surface *surface,
 								DRAWRECT *dr, VRAMHDL s, const RECT_T *rt) {
 
@@ -68,7 +60,7 @@ static BRESULT calcdrawrect(SDL_Surface *surface,
 	}
 	return(SUCCESS);
 }
-
+*/
 
 void scrnmng_initialize(void) {
 
@@ -78,60 +70,11 @@ void scrnmng_initialize(void) {
 
 BRESULT scrnmng_create(int width, int height) {
 
-	SDL_Surface		*surface;
-	SDL_PixelFormat	*fmt;
-	BOOL			r;
-
-	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
-		fprintf(stderr, "Error: SDL_Init: %s\n", SDL_GetError());
-		return(FAILURE);
-	}
-	s_sdlWindow = SDL_CreateWindow(app_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
-	s_renderer = SDL_CreateRenderer(s_sdlWindow, -1, 0);
-	SDL_RenderSetLogicalSize(s_renderer, width, height);
-	s_texture = SDL_CreateTexture(s_renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STATIC, width, height);
-	s_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, 0xf800, 0x07e0, 0x001f, 0);
-
-	surface = s_surface;
-	r = FALSE;
-	fmt = surface->format;
-#if defined(SUPPORT_8BPP)
-	if (fmt->BitsPerPixel == 8) {
-		r = TRUE;
-	}
-#endif
-#if defined(SUPPORT_16BPP)
-	if ((fmt->BitsPerPixel == 16) && (fmt->Rmask == 0xf800) &&
-		(fmt->Gmask == 0x07e0) && (fmt->Bmask == 0x001f)) {
-		r = TRUE;
-	}
-#endif
-#if defined(SUPPORT_24BPP)
-	if (fmt->BitsPerPixel == 24) {
-		r = TRUE;
-	}
-#endif
-#if defined(SUPPORT_32BPP)
-	if (fmt->BitsPerPixel == 32) {
-		r = TRUE;
-	}
-#endif
-#if defined(SCREEN_BPP)
-	if (fmt->BitsPerPixel != SCREEN_BPP) {
-		r = FALSE;
-	}
-#endif
-	if (r) {
-		scrnmng.enable = TRUE;
-		scrnmng.width = width;
-		scrnmng.height = height;
-		scrnmng.bpp = fmt->BitsPerPixel;
-		return(SUCCESS);
-	}
-	else {
-		fprintf(stderr, "Error: Bad screen mode");
-		return(FAILURE);
-	}
+   scrnmng.enable = TRUE;
+   scrnmng.width = width;
+   scrnmng.height = height;
+   scrnmng.bpp = 16;
+   return(SUCCESS);
 }
 
 void scrnmng_destroy(void) {
@@ -165,6 +108,7 @@ void scrnmng_setheight(int posy, int height) {
 
 const SCRNSURF *scrnmng_surflock(void) {
 
+   /*
 	SDL_Surface	*surface;
 
 	if (scrnmng.vram == NULL) {
@@ -189,6 +133,16 @@ const SCRNSURF *scrnmng_surflock(void) {
 	scrnsurf.height = min(scrnstat.height, 400);
 	scrnsurf.extend = 0;
 	return(&scrnsurf);
+   */
+   
+   scrnsurf.ptr    = scrnmng.vram->ptr;
+   scrnsurf.xalign = scrnmng.vram->xalign;
+   scrnsurf.yalign = scrnmng.vram->yalign;
+   scrnsurf.bpp    = scrnmng.vram->bpp;
+   scrnsurf.width  = min(scrnstat.width, 640);
+   scrnsurf.height = min(scrnstat.height, 400);
+   scrnsurf.extend = 0;
+   return(&scrnsurf);
 }
 
 static void draw_onmenu(void) {
@@ -196,9 +150,9 @@ static void draw_onmenu(void) {
 	RECT_T		rt;
 	SDL_Surface	*surface;
 	DRAWRECT	dr;
-const UINT8		*p;
-	UINT8		*q;
-const UINT8		*a;
+   const UINT8		*p;
+	UINT8          *q;
+   const UINT8		*a;
 	int			salign;
 	int			dalign;
 	int			x;
@@ -296,6 +250,7 @@ const UINT8		*a;
 
 void scrnmng_surfunlock(const SCRNSURF *surf) {
 
+   /*
 	SDL_Surface	*surface;
 
 	if (surf) {
@@ -317,6 +272,7 @@ void scrnmng_surfunlock(const SCRNSURF *surf) {
 			}
 		}
 	}
+   */
 }
 
 
@@ -352,8 +308,8 @@ void scrnmng_menudraw(const RECT_T *rct) {
 
 	SDL_Surface	*surface;
 	DRAWRECT	dr;
-const UINT8		*p;
-const UINT8		*q;
+   const UINT8		*p;
+   const UINT8		*q;
 	UINT8		*r;
 	UINT8		*a;
 	int			salign;
