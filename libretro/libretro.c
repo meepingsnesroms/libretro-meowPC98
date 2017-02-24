@@ -13,6 +13,13 @@
 #include "libretro.h"
 #include "libretro_params.h"
 
+#include "pccore.h"
+#include "keystat.h"
+
+void updateInput(){
+   //void keystat_keydown(REG8 ref);
+   //void keystat_keyup(REG8 ref);
+}
 
 static retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
@@ -97,23 +104,26 @@ void retro_init (void)
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
-
+   
+   pccore_init();
 }
 
 void retro_deinit(void)
 {
-   
+   pccore_term();
 }
 
 void retro_reset (void)
 {
-   
+   pccore_reset();
 }
 
 void retro_run (void)
 {
+   updateInput();
    
    //emulate 1 frame
+   pccore_exec(true /*draw*/);
    
    video_cb(FrameBuffer, LR_SCREENWIDTH, LR_SCREENHEIGHT, LR_SCREENWIDTH * 2/*Pitch*/);
 }

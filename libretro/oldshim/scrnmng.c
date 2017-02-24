@@ -149,6 +149,7 @@ const SCRNSURF *scrnmng_surflock(void) {
 
 static void draw_onmenu(void) {
 
+   /*
 	RECT_T		rt;
 	SDL_Surface	*surface;
 	DRAWRECT	dr;
@@ -248,33 +249,21 @@ static void draw_onmenu(void) {
 	SDL_RenderClear(s_renderer);
 	SDL_RenderCopy(s_renderer, s_texture, NULL, NULL);
 	SDL_RenderPresent(s_renderer);
+    */
+   
+   //no menu, use retroarch settings menu
 }
 
 void scrnmng_surfunlock(const SCRNSURF *surf) {
-
-   /*
-	SDL_Surface	*surface;
-
-	if (surf) {
-		if (scrnmng.vram == NULL) {
-			if (scrnmng.surface != NULL) {
-				surface = scrnmng.surface;
-				scrnmng.surface = NULL;
-				SDL_UnlockSurface(surface);
-
-				SDL_UpdateTexture(s_texture, NULL, surface->pixels, surface->pitch);
-				SDL_RenderClear(s_renderer);
-				SDL_RenderCopy(s_renderer, s_texture, NULL, NULL);
-				SDL_RenderPresent(s_renderer);
-			}
-		}
-		else {
-			if (menuvram) {
-				draw_onmenu();
-			}
-		}
-	}
-   */
+   
+   if (surf) {
+      if (scrnmng.vram != NULL) {
+         if (menuvram) {
+            draw_onmenu();
+         }
+         memcpy(FrameBuffer, surf->ptr, surf->width * surf->height);
+      }
+   }
 }
 
 
@@ -308,6 +297,7 @@ void scrnmng_leavemenu(void) {
 
 void scrnmng_menudraw(const RECT_T *rct) {
 
+   /*
 	SDL_Surface	*surface;
 	DRAWRECT	dr;
    const UINT8		*p;
@@ -430,5 +420,8 @@ void scrnmng_menudraw(const RECT_T *rct) {
 	SDL_RenderClear(s_renderer);
 	SDL_RenderCopy(s_renderer, s_texture, NULL, NULL);
 	SDL_RenderPresent(s_renderer);
+    */
+   
+   //no menu, use retroarch settings menu
 }
 

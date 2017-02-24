@@ -56,11 +56,30 @@ UINT file_getsize(FILEH handle) {
 
 short file_attr(const char *path) {
 
+   /*
+   struct stat	sb;
+	short	attr;
+
+
+	if (stat(path, &sb) == 0)
+
+	{
+
+		if (S_ISDIR(sb.st_mode)) {
+			return(FILEATTR_DIRECTORY);
+		}
+		attr = 0;
+		if (!(sb.st_mode & S_IWUSR)) {
+			attr |= FILEATTR_READONLY;
+		}
+		return(attr);
+	}
+	return(-1);
+   */
+   
    if (path_is_directory(path)) {
       return(FILEATTR_DIRECTORY);
    }
-   
-   return(0);
 }
 
 static BRESULT cnv_sttime(time_t *t, DOSDATE *dosdate, DOSTIME *dostime) {
