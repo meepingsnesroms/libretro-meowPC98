@@ -6,6 +6,12 @@ enum {
 	SOUND_MAXPCM
 };
 
+typedef struct {
+   BOOL     enabled;
+   BOOL     opened;
+   int		samples;
+   SINT16	*buf;
+} SOUNDMNG;
 
 #ifdef __cplusplus
 extern "C" {

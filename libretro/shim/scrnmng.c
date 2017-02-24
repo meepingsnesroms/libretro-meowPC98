@@ -4,6 +4,8 @@
 #include	"vramhdl.h"
 #include	"menubase.h"
 
+#include "libretro_exports.h"
+
 typedef struct {
 	BOOL        enable;
 	int			width;

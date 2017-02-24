@@ -6,7 +6,7 @@
 #define LR_SCREENASPECT 4/3
 #define LR_SCREENFPS 60
 
-#define LR_SOUNDRATE 44100
+#define LR_SOUNDRATE 16000
 
 #define LR_CORENAME "MeowPC98"
 #define LR_LIBVERSION "v0.0001"

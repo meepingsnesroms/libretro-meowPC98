@@ -17,11 +17,11 @@ extern "C" {
 void scrnmng_setwidth(int posx, int width);
 #define scrnmng_setextend(e)
 void scrnmng_setheight(int posy, int height);
-//const SCRNSURF *scrnmng_surflock(void);
-//void scrnmng_surfunlock(const SCRNSURF *surf);
+const SCRNSURF *scrnmng_surflock(void);
+void scrnmng_surfunlock(const SCRNSURF *surf);
    
-#define scrnmng_surflock()
-#define scrnmng_surfunlock(e)
+//#define scrnmng_surflock()
+//#define scrnmng_surfunlock(e)
 
 #define	scrnmng_isfullscreen()	(1)
 #define	scrnmng_haveextend()	(0)
