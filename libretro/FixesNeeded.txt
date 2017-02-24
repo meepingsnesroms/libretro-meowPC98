@@ -3,9 +3,9 @@ shim/taskmng.c
 shim/soundmng.cpp
 shim/sdlkbd.c
 shim/scrnmng.c
-shim/inputmng.c
 shim/fontmng.c
 
 Done:
 shim/dosio.c
 shim/np2.c
+shim/inputmng.c

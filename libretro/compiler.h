@@ -13,7 +13,8 @@
 
 #include <boolean.h>
 
-#include "dumbsdl.h"
+#include "sdlremap/sdl.h"
+#include "sdlremap/sdl_keycode.h"
 
 #define	BYTESEX_LITTLE
 #define	OSLANG_UTF8

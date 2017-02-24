@@ -11,37 +11,20 @@
 #include <fcntl.h>
 
 #include "libretro.h"
-#include "retro_miscellaneous.h"
+#include "libretro_params.h"
 
-#define MAKEBTNMAP(btn,pkebtn) JoystickButtonsEvent((pkebtn), input_cb(0/*port*/, RETRO_DEVICE_JOYPAD, 0, (btn)) != 0)
-
-// Sound buffer size
-#define SOUNDBUFFER	2048
-#define PMSOUNDBUFF	(SOUNDBUFFER*2)
-
-uint16_t screenbuff [320*240];
-int PixPitch = 320;//screen->pitch / 2;
-int ScOffP = (24 * 320/*PixPitch*/) + 16;
 
 static retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
 static retro_input_poll_t poll_cb = NULL;
 static retro_input_state_t input_cb = NULL;
 static retro_audio_sample_t audio_cb = NULL;
-//static retro_audio_sample_batch_t audio_batch_cb = NULL;
+static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 
-void handlekeyevents(){
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_START,9);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_UP,10);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_DOWN,11);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_LEFT,4);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_RIGHT,5);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_A,1);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_B,2);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_L,6);
-   MAKEBTNMAP(RETRO_DEVICE_ID_JOYPAD_R,7);
-}
+
+uint16_t FrameBuffer[LR_SCREENWIDTH * LR_SCREENHEIGHT];
+
 
 void *retro_get_memory_data(unsigned type)
 {
@@ -88,22 +71,22 @@ void retro_set_environment(retro_environment_t cb)
 void retro_get_system_info(struct retro_system_info *info)
 {
    memset(info, 0, sizeof(*info));
-   info->need_fullpath    = false;
-   info->valid_extensions = "hdi";
-   info->library_version  = "v0.0001";
-   info->library_name     = "MeowPC98";
-   info->block_extract    = false;
+   info->need_fullpath    = LR_NEEDFILEPATH;
+   info->valid_extensions = LR_VALIDFILEEXT;
+   info->library_version  = LR_LIBVERSION;
+   info->library_name     = LR_CORENAME;
+   info->block_extract    = LR_BLOCKARCEXTRACT;
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   info->geometry.base_width = 640;
-   info->geometry.base_height = 400;
-   info->geometry.max_width = 640;
-   info->geometry.max_height = 400;
-   info->geometry.aspect_ratio = 4 / 3;
-   info->timing.fps = 60;
-   info->timing.sample_rate = 44100;
+   info->geometry.base_width   = LR_SCREENWIDTH;
+   info->geometry.base_height  = LR_SCREENHEIGHT;
+   info->geometry.max_width    = LR_SCREENWIDTH;
+   info->geometry.max_height   = LR_SCREENHEIGHT;
+   info->geometry.aspect_ratio = LR_SCREENASPECT;
+   info->timing.fps            = LR_SCREENFPS;
+   info->timing.sample_rate    = LR_SOUNDRATE;
 }
 
 void retro_init (void)
@@ -119,45 +102,20 @@ void retro_init (void)
 
 void retro_deinit(void)
 {
-   PokeMini_VideoPalette_Free();
-   PokeMini_Destroy();
+   
 }
 
 void retro_reset (void)
 {
-   PokeMini_Reset(1 /*hardreset*/);
+   
 }
 
 void retro_run (void)
 {
    
-   poll_cb();
-   handlekeyevents();
+   //emulate 1 frame
    
-   PokeMini_EmulateFrame();
-   
-   /*
-   uint16_t audiosamples;
-   static int16_t audiobuffer[44100 + 100];
-   audiosamples = MinxAudio_SamplesInBuffer();
-   MinxAudio_GetSamplesS16(audiobuffer, audiosamples);
-   audio_batch_cb(audiobuffer, audiosamples);
-   */
-   
-   static int16_t audiobuffer[612];
-   uint16_t audiosamples = 612;// MinxAudio_SamplesInBuffer();
-   MinxAudio_GetSamplesS16(audiobuffer, audiosamples);
-   int i;
-   for(i=0;i<612;i++)
-      audio_cb(audiobuffer[i],audiobuffer[i]);
-   
-   if (PokeMini_Rumbling) {
-      PokeMini_VideoBlit((uint16_t *)screenbuff + ScOffP + PokeMini_GenRumbleOffset(PixPitch), PixPitch);
-   } else {
-      PokeMini_VideoBlit((uint16_t *)screenbuff + ScOffP, PixPitch);
-   }
-   
-   video_cb(screenbuff, 320, 240, 320*2/*Pitch*/);
+   video_cb(FrameBuffer, LR_SCREENWIDTH, LR_SCREENHEIGHT, LR_SCREENWIDTH * 2/*Pitch*/);
 }
 
 size_t retro_serialize_size (void)
@@ -187,37 +145,11 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 
 bool retro_load_game(const struct retro_game_info *game)
 {
-   int passed;
-   int userdefinedindex = 0;//make user defined later
-
    if (!game)
       return false;
    
-   CommandLineInit();
-   CommandLine.joyenabled = 1;
+   //load the data here
    
-   //add LCDMODE_COLORS option
-   // Set video spec and check if is supported
-   if (!PokeMini_SetVideo((TPokeMini_VideoSpec *)&PokeMini_Video3x3, 16, 0/*lcdfilter*//*0=none*/, LCDMODE_ANALOG/*lcdmode*/)) {
-      printf("Couldn't set video spec\n");
-      abort();
-   }
-   
-   passed = PokeMini_Create(0/*flags*/, PMSOUNDBUFF);//returns 1 on completion,0 on error
-   if(!passed)abort();
-   
-   PokeMini_VideoPalette_Init(PokeMini_RGB16, 1/*enablehighcolor*/);
-   PokeMini_VideoPalette_Index(userdefinedindex, NULL /*CustomMonoPal*/, 0/*int contrastboost*/, 0/*int brightoffset*/);
-   PokeMini_ApplyChanges();
-   
-   PokeMini_UseDefaultCallbacks();
-   
-   MinxAudio_ChangeEngine(MINX_AUDIO_DIRECTPWM);//enable sound
-   
-   passed = PokeMini_LoadMINFileXPLATFORM(game->size,(uint8_t*)game->data);//returns 1 on completion,0 on error
-   if(!passed)abort();
-   
-   PokeMini_Reset(1 /*hardreset*/);
    return true;
 }
 
@@ -229,12 +161,15 @@ bool retro_load_game_special(
    return false;
 }
 
-void retro_unload_game (void){}
+void retro_unload_game (void)
+{
 
+}
 
-//useless callbacks
-
-void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb){}
+void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
+{
+   audio_batch_cb = cb;
+}
 
 unsigned retro_api_version(void)
 {
@@ -251,4 +186,3 @@ unsigned retro_get_region (void)
 { 
    return RETRO_REGION_NTSC;
 }
-
