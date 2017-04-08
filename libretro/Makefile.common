@@ -8,7 +8,7 @@ INCFLAGS += -I$(NP2_PATH) \
 	-I$(NP2_PATH)/embed/menu \
 	-I$(NP2_PATH)/embed/menubase \
 	-I$(NP2_PATH)/generic \
-	-I$(NP2_PATH)/i286c \
+	-I$(NP2_PATH)/i386c \
 	-I$(NP2_PATH)/io \
 	-I$(NP2_PATH)/mem \
 	-I$(NP2_PATH)/sound \
@@ -18,7 +18,6 @@ INCFLAGS += -I$(NP2_PATH) \
 	-I$(NP2_PATH)/libretro/libretro-common/include
 
 SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
-	$(subst $(LOCAL_PATH)/,, \
 		$(NP2_PATH)/calendar.c \
 		$(NP2_PATH)/debugsub.c \
 		$(NP2_PATH)/keystat.c \
@@ -26,6 +25,7 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(NP2_PATH)/pccore.c \
 		$(NP2_PATH)/statsave.c \
 		$(NP2_PATH)/timing.c \
+	$(subst $(LOCAL_PATH)/,, \
 		$(wildcard $(NP2_PATH)/bios/*.c) \
 		$(wildcard $(NP2_PATH)/cbus/*.c) \
 		$(wildcard $(NP2_PATH)/codecnv/*.c) \
@@ -36,7 +36,7 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(wildcard $(NP2_PATH)/fdd/*.c) \
 		$(wildcard $(NP2_PATH)/font/*.c) \
 		$(wildcard $(NP2_PATH)/generic/*.c) \
-		$(wildcard $(NP2_PATH)/i286c/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/*.c) \
 		$(wildcard $(NP2_PATH)/io/*.c) \
 		$(wildcard $(NP2_PATH)/lio/*.c) \
 		$(wildcard $(NP2_PATH)/mem/*.c) \

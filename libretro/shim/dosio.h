@@ -1,3 +1,4 @@
+#include "streams/file_stream.h"
 
 typedef  RFILE *				FILEH;
 #define	FILEH_INVALID		NULL

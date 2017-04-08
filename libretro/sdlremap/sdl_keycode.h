@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sdl_scancode.h"
+
 typedef int32_t SDL_Keycode;
 
 #define SDLK_SCANCODE_MASK (1<<30)

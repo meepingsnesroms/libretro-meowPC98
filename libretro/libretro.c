@@ -13,6 +13,8 @@
 #include "libretro.h"
 #include "libretro_params.h"
 
+
+#include "compiler.h"//required to prevent missing type errors
 #include "pccore.h"
 #include "keystat.h"
 

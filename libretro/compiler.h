@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <setjmp.h>
 
 #include <boolean.h>
 
@@ -21,8 +22,8 @@
 #define	OSLINEBREAK_CRLF
 #define  RESOURCE_US
 
-typedef	signed int		SINT;
-typedef	unsigned int	UINT;
+typedef	int32_t		SINT;
+typedef	uint32_t    UINT;
 
 typedef	int8_t		SINT8;
 typedef	uint8_t		UINT8;
@@ -30,6 +31,8 @@ typedef	int16_t		SINT16;
 typedef	uint16_t		UINT16;
 typedef	int32_t		SINT32;
 typedef	uint32_t		UINT32;
+typedef	int64_t		SINT64;
+typedef	uint64_t		UINT64;
 
 typedef  int32_t*    INTPTR;
 

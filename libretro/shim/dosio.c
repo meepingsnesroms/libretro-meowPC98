@@ -11,7 +11,6 @@
 static	char	curpath[MAX_PATH] = "./";
 static	char	*curfilep = curpath + 2;
 
-/* ファイル操作 */
 FILEH file_open(const char *path) {
 
    return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
@@ -290,14 +289,10 @@ void file_cutext(char *path) {
 }
 
 void file_cutseparator(char *path) {
-
-	int		pos;
-
-	pos = (int)strlen(path) - 1;
-	if ((pos > 0) &&							// 2文字以上でー
-		(path[pos] == '/') &&					// ケツが \ でー
-		((pos != 1) || (path[0] != '.'))) {		// './' ではなかったら
-		path[pos] = '\0';
+   
+	int pos = (int)strlen(path) - 1;
+	if ((pos > 0) && (path[pos] == '/') && ((pos != 1) || (path[0] != '.'))) {
+      path[pos] = '\0';
 	}
 }
 
