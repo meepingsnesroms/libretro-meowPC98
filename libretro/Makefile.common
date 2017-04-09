@@ -20,10 +20,6 @@ INCFLAGS += -I$(NP2_PATH) \
 	-I$(NP2_PATH)/zlib \
 	-I$(NP2_PATH)/libretro \
    -I$(NP2_PATH)/libretro/shim \
-   -I$(NP2_PATH)/libretro/shim/ext \
-   -I$(NP2_PATH)/libretro/shim/ext/c86ctl \
-   -I$(NP2_PATH)/libretro/shim/ext/scci \
-   -I$(NP2_PATH)/libretro/shim/misc \
 	-I$(NP2_PATH)/libretro/libretro-common/include
 
 SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
@@ -55,7 +51,7 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(wildcard $(NP2_PATH)/i386c/*.c) \
 		$(wildcard $(NP2_PATH)/i386c/ia32/*.c) \
 		$(wildcard $(NP2_PATH)/i386c/ia32/instructions/*.c) \
-		$(wildcard $(NP2_PATH)/i386c/ia32/instructions/fpu/*.c) \
+		$(NP2_PATH)/i386c/ia32/instructions/fpu/fpemul.c \
 		$(wildcard $(NP2_PATH)/io/*.c) \
 		$(wildcard $(NP2_PATH)/lio/*.c) \
 		$(wildcard $(NP2_PATH)/mem/*.c) \
@@ -67,8 +63,5 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(wildcard $(NP2_PATH)/zlib/*.c) \
 		$(wildcard $(NP2_PATH)/libretro/shim/*.c)
 
-SOURCES_CXX := $(NP2_PATH)/libretro/shim/soundmng.cpp \
-		$(wildcard $(NP2_PATH)/libretro/shim/ext/*.cpp) \
-		$(wildcard $(NP2_PATH)/libretro/shim/ext/c86ctl/*.cpp) \
-		$(wildcard $(NP2_PATH)/libretro/shim/ext/scci/*.cpp) \
-		$(wildcard $(NP2_PATH)/libretro/shim/misc/*.cpp)
+SOURCES_CXX := $(NP2_PATH)/libretro/shim/soundmng.cpp
+

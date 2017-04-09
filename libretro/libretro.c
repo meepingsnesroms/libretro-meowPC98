@@ -17,6 +17,7 @@
 #include "compiler.h"//required to prevent missing type errors
 #include "pccore.h"
 #include "keystat.h"
+#include "newdisk.h"
 
 void updateInput(){
    //void keystat_keydown(REG8 ref);
@@ -107,12 +108,36 @@ void retro_init (void)
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
    
+   initload();
+   TRACEINIT();
+   if(fontmng_init() != SUCCESS)abort();//hack
+   inputmng_init();
+   keystat_initialize();
+   if(sysmenu_create() != SUCCESS)abort();//hack
+   scrnmng_initialize();
+   if(scrnmng_create(LR_SCREENWIDTH, LR_SCREENHEIGHT) != SUCCESS)abort();//hack
+   soundmng_initialize();
+   commng_initialize();
+   sysmng_initialize();
+   taskmng_initialize();
    pccore_init();
+   S98_init();
+   
+   scrndraw_redraw();
+   pccore_reset();
 }
 
 void retro_deinit(void)
 {
    pccore_term();
+   S98_trash();
+   soundmng_deinitialize();
+   
+   sysmng_deinitialize();
+   
+   scrnmng_destroy();
+   sysmenu_destroy();
+   TRACETERM();
 }
 
 void retro_reset (void)
@@ -132,16 +157,19 @@ void retro_run (void)
 
 size_t retro_serialize_size (void)
 {
+   //no savestates on this core
    return 0;
 }
 
 bool retro_serialize(void *data, size_t size)
 {
+   //no savestates on this core
    return false;
 }
 
 bool retro_unserialize(const void * data, size_t size)
 {
+   //no savestates on this core
    return false;
 }
 
@@ -159,6 +187,25 @@ bool retro_load_game(const struct retro_game_info *game)
 {
    if (!game)
       return false;
+   
+   char* file_extension = game->path + strlen(game->path) - 3;
+   
+   if(strcmp(file_extension, "fdd") == 0){
+      
+   }
+   else if(strcmp(file_extension, "thd") == 0){
+      
+   }
+   else if(strcmp(file_extension, "nhd") == 0){
+      
+   }
+   else if(strcmp(file_extension, "hdi") == 0){
+      
+   }
+   else if(strcmp(file_extension, "vhd") == 0){
+      
+   }
+   else return false;
    
    //load the data here
    

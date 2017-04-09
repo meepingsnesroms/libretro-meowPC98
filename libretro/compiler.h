@@ -14,8 +14,8 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <string.h>
-#include <boolean.h>
 
+#include "boolean.h"
 #include "features/features_cpu.h"
 
 #include "sdlremap/sdl.h"
@@ -47,9 +47,6 @@ typedef bool BOOL;
 #ifndef	FALSE
 #define	FALSE	false
 #endif
-
-//#define PTR_TO_UINT32(p)	((UINT32)GPOINTER_TO_UINT(p))
-//#define UINT32_TO_PTR(v)	GUINT_TO_POINTER((UINT32)(v))
 
 #define	BRESULT				UINT
 #define	OEMCHAR				char
@@ -92,7 +89,8 @@ typedef bool BOOL;
 #define	NELEMENTS(a)	((int)(sizeof(a) / sizeof(a[0])))
 #endif
 
-#define	msgbox(title, msg)	toolkit_messagebox(title, msg);
+//#define	msgbox(title, msg)	toolkit_messagebox(title, msg);
+#define	msgbox(title, msg)
 
 #include "common.h"
 #include "milstr.h"
@@ -102,23 +100,24 @@ typedef bool BOOL;
 #include "trace.h"
 
 
-//#define	GETTICK()			SDL_GetTicks()
 #define	GETTICK()         (cpu_features_get_time_usec() / 1000)//millisecond timer
 #define	__ASSERT(s)
 #define	SPRINTF				sprintf
 #define	STRLEN				strlen
 
 
-#define  USE_FPU
+
 
 #define	MEMOPTIMIZE		2
 
 #define	VERMOUTH_LIB
-//#define  SOUND_CRITICAL //this is only used for threading
+
 #define	SOUNDRESERVE	100
 #define	SUPPORT_SWSEEKSND
 
 #define	SCREEN_BPP		16
+
+#define  TRACE
 
 
 //extras
@@ -131,6 +130,7 @@ typedef bool BOOL;
 
 #if defined(SUPPORT_PC9821)
 #define	CPUCORE_IA32
+#define  USE_FPU
 #define	IA32_PAGING_EACHSIZE
 #define	SUPPORT_PC9801_119
 #endif
@@ -138,10 +138,9 @@ typedef bool BOOL;
 #define	SUPPORT_PC9861K
 #define	SUPPORT_SOFTKBD		0
 #define  SUPPORT_S98
-//#define  SUPPORT_WAVEREC
-//#define  SUPPORT_RECVIDEO
+
 #define	SUPPORT_KEYDISP
-//#define	SUPPORT_MEMDBG32
+
 #define	SUPPORT_HOSTDRV
 #define	SUPPORT_IDEIO
 #define	SUPPORT_SASI
@@ -151,13 +150,30 @@ typedef bool BOOL;
 #define	SUPPORT_STATSAVE	10
 #define	SUPPORT_ROMEO
 
-#define	SUPPORT_EXTERNALCHIP
-
 #define  SUPPORT_ARC
 #define  SUPPORT_ZLIB
 
 #define	SUPPORT_16BPP
 #define	SUPPORT_NORMALDISP
+
+//unused paramaters
+
+//this is only used for threading
+//#define  SOUND_CRITICAL
+
+//this is not a debug build
+//#define	SUPPORT_MEMDBG32
+
+//retroarch does its own recording
+//#define  SUPPORT_WAVEREC
+//#define  SUPPORT_RECVIDEO
+
+//the emulator must be self contained to work with retroarch
+//#define	SUPPORT_EXTERNALCHIP
+
+//old functions
+//#define PTR_TO_UINT32(p)	((UINT32)GPOINTER_TO_UINT(p))
+//#define UINT32_TO_PTR(v)	GUINT_TO_POINTER((UINT32)(v))
 
 //outdated things to ignore
 #define	FASTCALL
