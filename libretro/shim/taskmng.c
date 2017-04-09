@@ -1,7 +1,7 @@
 #include	"compiler.h"
 #include	"inputmng.h"
 #include	"taskmng.h"
-#include	"sdlkbd.h"
+//#include	"sdlkbd.h"
 #include	"vramhdl.h"
 #include	"menubase.h"
 #include	"sysmenu.h"
@@ -29,6 +29,7 @@ void taskmng_exit(void) {
 }
 
 void taskmng_rol(void) {
+   /*
 
 	SDL_Event	e;
 
@@ -98,13 +99,12 @@ void taskmng_rol(void) {
 			task_avail = FALSE;
 			break;
 	}
+    */
 }
 
 BOOL taskmng_sleep(UINT32 tick) {
 
-	UINT32	base;
-
-	base = GETTICK();
+	UINT32 base = GETTICK();
 	while((task_avail) && ((GETTICK() - base) < tick)) {
 		taskmng_rol();
 		//SDL_Delay(1);

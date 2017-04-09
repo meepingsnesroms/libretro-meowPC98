@@ -11,71 +11,31 @@
 #include "ext/externalchipmanager.h"
 #endif
 
-SOUNDMNG	soundmng;
+#define	NSNDBUF				2
+
+typedef struct {
+	BOOL	opened;
+	int		nsndbuf;
+	int		samples;
+	SINT16	*buf[NSNDBUF];
+} SOUNDMNG;
+
+static	SOUNDMNG	soundmng;
 
 UINT soundmng_create(UINT rate, UINT ms) {
-   
-   UINT			s;
-   UINT			samples;
-   
-   if (rate != 16000) abort();
-   
-   if (soundmng.opened) {
-      return(0);
-   }
-
-   
-   s = rate * ms / (NSNDBUF * 1000);
-   samples = 1;
-   while(s > samples) {
-      samples <<= 1;
-   }
-   
-   soundmng.buf = (SINT16 *)_MALLOC(samples * 2 * sizeof(SINT16), "buf");
-   if (!soundmng.buf) {
-      return(0);
-   }
-   ZeroMemory(soundmng.buf, samples * 2 * sizeof(SINT16));
-   
-   soundmng.nsndbuf = 0;
-   soundmng.samples = samples;
-   
-#if defined(VERMOUTH_LIB)
-   cmvermouth_load(rate);
-#endif
-   
-   soundmng.opened = TRUE;
-   return(samples);
+	return(0);
 }
 
-void soundmng_destroy(void) {
-   
-   if (soundmng.opened) {
-      soundmng.opened = FALSE;
-      _MFREE(soundmng.buff);
-   }
+void soundmng_destroy(void)
+{
 }
 
 void soundmng_play(void)
 {
-	if (soundmng.opened)
-	{
-      soundmng.enabled = TRUE;
-#if defined(SUPPORT_EXTERNALCHIP)
-		CExternalChipManager::GetInstance()->Mute(false);
-#endif
-	}
 }
 
 void soundmng_stop(void)
 {
-	if (soundmng.opened)
-	{
-      soundmng.enabled = FALSE;
-#if defined(SUPPORT_EXTERNALCHIP)
-		CExternalChipManager::GetInstance()->Mute(true);
-#endif
-	}
 }
 
 

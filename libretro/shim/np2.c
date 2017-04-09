@@ -9,7 +9,7 @@
 #include	"soundmng.h"
 #include	"sysmng.h"
 #include	"taskmng.h"
-#include	"sdlkbd.h"
+//#include	"sdlkbd.h"
 #include	"ini.h"
 #include	"pccore.h"
 #include	"statsave.h"
@@ -134,7 +134,7 @@ int np2_main(int argc, char *argv[]) {
 	if (fontmng_init() != SUCCESS) {
 		goto np2main_err2;
 	}
-	sdlkbd_initialize();
+	//sdlkbd_initialize();
 	inputmng_init();
 	keystat_initialize();
 
@@ -238,7 +238,7 @@ int np2_main(int argc, char *argv[]) {
 	scrnmng_destroy();
 	sysmenu_destroy();
 	TRACETERM();
-	SDL_Quit();
+	//SDL_Quit();
 	return(SUCCESS);
 
 np2main_err5:
@@ -254,7 +254,7 @@ np2main_err3:
 
 np2main_err2:
 	TRACETERM();
-	SDL_Quit();
+	//SDL_Quit();
 
 np2main_err1:
 	return(FAILURE);

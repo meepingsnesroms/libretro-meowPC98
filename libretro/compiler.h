@@ -10,9 +10,13 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <setjmp.h>
-
+#include <stdarg.h>
+#include <string.h>
 #include <boolean.h>
+
+#include "features/features_cpu.h"
 
 #include "sdlremap/sdl.h"
 #include "sdlremap/sdl_keycode.h"
@@ -60,7 +64,7 @@ typedef bool BOOL;
 #define SIZE_VGA
 
 #ifndef	MAX_PATH
-#define	MAX_PATH	256
+#define	MAX_PATH	4096
 #endif
 
 #ifndef	max
@@ -98,16 +102,19 @@ typedef bool BOOL;
 #include "trace.h"
 
 
-#define	GETTICK()			SDL_GetTicks()
+//#define	GETTICK()			SDL_GetTicks()
+#define	GETTICK()         (cpu_features_get_time_usec() / 1000)//millisecond timer
 #define	__ASSERT(s)
 #define	SPRINTF				sprintf
 #define	STRLEN				strlen
 
 
+#define  USE_FPU
+
 #define	MEMOPTIMIZE		2
 
 #define	VERMOUTH_LIB
-#define  SOUND_CRITICAL
+//#define  SOUND_CRITICAL //this is only used for threading
 #define	SOUNDRESERVE	100
 #define	SUPPORT_SWSEEKSND
 
@@ -144,8 +151,6 @@ typedef bool BOOL;
 #define	SUPPORT_STATSAVE	10
 #define	SUPPORT_ROMEO
 
-#define  SOUND_CRITICAL
-#define	SOUNDRESERVE	100
 #define	SUPPORT_EXTERNALCHIP
 
 #define  SUPPORT_ARC

@@ -5,7 +5,7 @@
 #include	"scrnmng.h"
 #include	"sysmng.h"
 #include	"taskmng.h"
-#include	"sdlkbd.h"
+//#include	"sdlkbd.h"
 #include	"pccore.h"
 #include	"iocore.h"
 #include	"pc9861k.h"
@@ -27,6 +27,7 @@
 
 
 static void sys_cmd(MENUID id) {
+   /*
 
 	UINT	update;
 
@@ -438,12 +439,14 @@ static void sys_cmd(MENUID id) {
 			break;
 	}
 	sysmng_update(update);
+    */
 }
 
 
 // ----
 
 BRESULT sysmenu_create(void) {
+   /*
 
 	if (menubase_create() != SUCCESS) {
 		goto smcre_err;
@@ -456,16 +459,21 @@ BRESULT sysmenu_create(void) {
 
 smcre_err:
 	return(FAILURE);
+   */
+   return FAILURE;
 }
 
 void sysmenu_destroy(void) {
 
+   /*
 	menubase_close();
 	menubase_destroy();
 	menusys_destroy();
+   */
 }
 
 BRESULT sysmenu_menuopen(UINT menutype, int x, int y) {
+   /*
 
 	UINT8	b;
 
@@ -522,5 +530,7 @@ BRESULT sysmenu_menuopen(UINT menutype, int x, int y) {
 	menusys_setcheck(MID_RAPID, (np2cfg.BTN_RAPID & 1));
 	menusys_setcheck(MID_MSRAPID, (np2cfg.MOUSERAPID & 1));
 	return(menusys_open(x, y));
+   */
+   return FAILURE;
 }
 
