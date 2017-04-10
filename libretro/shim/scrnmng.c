@@ -16,7 +16,7 @@ void scrnmng_surfunlock(const SCRNSURF *surf){}
 BRESULT scrnmng_create(int width, int height) {
 
    if(width != 640 || height != 400){
-      printf("Invalid screen size.\n");
+      printf("Invalid screen size:%dx%d\n", width, height);
       abort();
    }
    

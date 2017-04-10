@@ -17,6 +17,8 @@ typedef struct {
 	BOOL     opened;
 } SOUNDMNG;
 
+#define NSNDBUF 1
+
 static	SOUNDMNG	soundmng;
 
 UINT soundmng_create(UINT rate, UINT ms) {
@@ -25,11 +27,19 @@ UINT soundmng_create(UINT rate, UINT ms) {
       abort();
    }
    
+   UINT s = rate * ms / (NSNDBUF * 1000);
+   UINT samples = 1;
+   while(s > samples) {
+      samples <<= 1;
+   }
+   
+   printf("Samples:%d\n", samples);
+   
    audio_paused = false;
 #if defined(VERMOUTH_LIB)
    cmvermouth_load(rate);
 #endif
-	return(44100);
+	return(samples);
 }
 
 void soundmng_destroy(void)

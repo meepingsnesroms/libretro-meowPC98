@@ -39,7 +39,7 @@ static retro_environment_t environ_cb = NULL;
 
 
 uint16_t   FrameBuffer[LR_SCREENWIDTH * LR_SCREENHEIGHT];
-uint16_t   audio_buffer[LR_SOUNDRATE * 2];//can store 1 second of audio
+uint16_t   audio_buffer[LR_SOUNDRATE * 2 * 30/*overflow issues*/];//can store 1 second of audio
 uint32_t   audio_samples;
 bool       audio_paused;
 
@@ -149,11 +149,12 @@ void retro_run (void)
    //emulate 1 frame
    pccore_exec(true /*draw*/);
    
+   /*
    if(!audio_paused){
       SINT16         *dst   = audio_buffer;
       const SINT32	*src   = sound_pcmlock();
       
-      audio_samples = (LR_SOUNDRATE / 60);
+      audio_samples = (LR_SOUNDRATE / LR_SCREENFPS);
       if (src) {
          satuation_s16(dst, src, audio_samples);
          sound_pcmunlock(src);
@@ -164,6 +165,7 @@ void retro_run (void)
       
       audio_batch_cb(audio_buffer, audio_samples);
    }
+   */
    
    video_cb(FrameBuffer, LR_SCREENWIDTH, LR_SCREENHEIGHT, LR_SCREENWIDTH * 2/*Pitch*/);
 }
