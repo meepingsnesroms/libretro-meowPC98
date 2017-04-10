@@ -16,7 +16,7 @@ enum {
 };
 
 typedef struct {
-const char	*item;
+   const char	*item;
 	UINT	itemtype;
 	void	*value;
 	UINT	size;

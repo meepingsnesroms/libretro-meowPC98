@@ -11,31 +11,55 @@
 #include "ext/externalchipmanager.h"
 #endif
 
-#define	NSNDBUF				2
+#include "libretro_exports.h"
 
 typedef struct {
-	BOOL	opened;
-	int		nsndbuf;
-	int		samples;
-	SINT16	*buf[NSNDBUF];
+	BOOL     opened;
 } SOUNDMNG;
 
 static	SOUNDMNG	soundmng;
 
 UINT soundmng_create(UINT rate, UINT ms) {
-	return(0);
+   if(rate != 44100){
+      printf("Invalid uddio rate:%d Moo\n", rate);
+      abort();
+   }
+   
+   audio_paused = false;
+#if defined(VERMOUTH_LIB)
+   cmvermouth_load(rate);
+#endif
+	return(44100);
 }
 
 void soundmng_destroy(void)
 {
+   if (soundmng.opened) {
+      soundmng.opened = FALSE;
+      audio_paused = true;
+   }
 }
 
 void soundmng_play(void)
 {
+   if (soundmng.opened)
+   {
+      audio_paused = false;
+#if defined(SUPPORT_EXTERNALCHIP)
+      CExternalChipManager::GetInstance()->Mute(false);
+#endif
+   }
 }
 
 void soundmng_stop(void)
 {
+   if (soundmng.opened)
+   {
+      audio_paused = true;
+#if defined(SUPPORT_EXTERNALCHIP)
+      CExternalChipManager::GetInstance()->Mute(true);
+#endif
+   }
 }
 
 

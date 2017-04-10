@@ -126,7 +126,7 @@ typedef bool BOOL;
 
 #define	SUPPORT_CRT31KHZ
 #define	SUPPORT_SWSEEKSND
-#define  SUPPORT_PC9821
+//#define  SUPPORT_PC9821
 
 #if defined(SUPPORT_PC9821)
 #define	CPUCORE_IA32

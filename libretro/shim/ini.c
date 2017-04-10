@@ -381,4 +381,3 @@ void initsave(void) {
 	milstr_ncpy(path, file_getcd(inifile), sizeof(path));
 	ini_write(path, ini_title, iniitem, INIITEMS);
 }
-

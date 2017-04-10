@@ -28,7 +28,7 @@ void soundmng_stop(void);
 
 void soundmng_initialize(void);
 void soundmng_deinitialize(void);
-
+   
 #ifdef __cplusplus
 }
 #endif
