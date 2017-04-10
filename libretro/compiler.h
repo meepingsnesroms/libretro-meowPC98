@@ -186,4 +186,3 @@ typedef bool BOOL;
 #define	VRAMCALL
 #define	SCRNCALL
 #define	VERMOUTHCL
-

@@ -7,6 +7,8 @@ INCFLAGS += -I$(NP2_PATH) \
 	-I$(NP2_PATH)/embed \
 	-I$(NP2_PATH)/embed/menu \
 	-I$(NP2_PATH)/embed/menubase \
+	-I$(NP2_PATH)/fdd \
+	-I$(NP2_PATH)/font \
 	-I$(NP2_PATH)/generic \
 	-I$(NP2_PATH)/i386c \
 	-I$(NP2_PATH)/i386c/ia32 \

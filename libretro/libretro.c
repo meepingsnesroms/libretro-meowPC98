@@ -17,7 +17,9 @@
 #include "compiler.h"//required to prevent missing type errors
 #include "pccore.h"
 #include "keystat.h"
+#include "fddfile.h"
 #include "newdisk.h"
+#include "diskdrv.h"
 
 void updateInput(){
    //void keystat_keydown(REG8 ref);
@@ -110,21 +112,27 @@ void retro_init (void)
    
    initload();
    TRACEINIT();
-   if(fontmng_init() != SUCCESS)abort();//hack
+   if(fontmng_init() != SUCCESS){
+      printf("Font init failed.\n");
+      abort();//hack
+   }
    inputmng_init();
    keystat_initialize();
-   if(sysmenu_create() != SUCCESS)abort();//hack
+   if(sysmenu_create() != SUCCESS){
+      printf("Sysmenu init failed.\n");
+      abort();//hack
+   }
    scrnmng_initialize();
-   if(scrnmng_create(LR_SCREENWIDTH, LR_SCREENHEIGHT) != SUCCESS)abort();//hack
+   if(scrnmng_create(LR_SCREENWIDTH, LR_SCREENHEIGHT) != SUCCESS){
+      printf("Scrnmng init failed.\n");
+      abort();//hack
+   }
    soundmng_initialize();
    commng_initialize();
    sysmng_initialize();
    taskmng_initialize();
    pccore_init();
    S98_init();
-   
-   scrndraw_redraw();
-   pccore_reset();
 }
 
 void retro_deinit(void)
@@ -191,23 +199,38 @@ bool retro_load_game(const struct retro_game_info *game)
    char* file_extension = game->path + strlen(game->path) - 3;
    
    if(strcmp(file_extension, "fdd") == 0){
-      
+      //floppy disk, all oters are harddrives
+      newdisk_fdd(game->path, DISKTYPE_2HD/*type, largest floppy*/, "NoName");
    }
    else if(strcmp(file_extension, "thd") == 0){
-      
+      diskdrv_setsxsi(0/*drive number*/, game->path);
    }
    else if(strcmp(file_extension, "nhd") == 0){
-      
+      diskdrv_setsxsi(0/*drive number*/, game->path);
    }
    else if(strcmp(file_extension, "hdi") == 0){
-      
+      diskdrv_setsxsi(0/*drive number*/, game->path);
    }
    else if(strcmp(file_extension, "vhd") == 0){
-      
+      diskdrv_setsxsi(0/*drive number*/, game->path);
    }
    else return false;
    
-   //load the data here
+   char* syspath;
+   uint32_t syspathlength;
+   bool worked = environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY,(void *)&syspath);
+   if(!worked)abort();
+   syspathlength = strlen(syspath);
+   
+   strcpy(np2cfg.fontfile, syspath);
+   strcpy(syspath + syspathlength, "/NP2/FONT.BMP");
+   
+   strcpy(np2cfg.biospath, syspath);
+   strcpy(syspath + syspathlength, "/NP2/BIOS.ROM");
+   
+   np2cfg.EXTMEM = 7;//max memory a stock pc98 can have
+   
+   pccore_reset();
    
    return true;
 }

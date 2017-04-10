@@ -31,7 +31,7 @@ typedef	unsigned int		UINT32;
 
 #define	BRESULT				UINT
 #define	OEMCHAR				char
-#define	OEMTEXT(string)		string
+#define	OEMTEXT(string)	string
 #define	OEMSPRINTF			sprintf
 #define	OEMSTRLEN			strlen
 
