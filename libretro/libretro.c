@@ -34,14 +34,11 @@ static retro_video_refresh_t video_cb = NULL;
 static retro_input_poll_t poll_cb = NULL;
 static retro_input_state_t input_cb = NULL;
 static retro_audio_sample_t audio_cb = NULL;
-static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 
 
 uint16_t   FrameBuffer[LR_SCREENWIDTH * LR_SCREENHEIGHT];
-uint16_t   audio_buffer[LR_SOUNDRATE * 2 * 30/*overflow issues*/];//can store 1 second of audio
-uint32_t   audio_samples;
-bool       audio_paused;
+retro_audio_sample_batch_t audio_batch_cb = NULL;
 
 void *retro_get_memory_data(unsigned type)
 {
@@ -119,9 +116,6 @@ void retro_init (void)
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
-   
-   audio_paused  = true;
-   audio_samples = 0;
 }
 
 void retro_deinit(void)
@@ -148,24 +142,6 @@ void retro_run (void)
    
    //emulate 1 frame
    pccore_exec(true /*draw*/);
-   
-   /*
-   if(!audio_paused){
-      SINT16         *dst   = audio_buffer;
-      const SINT32	*src   = sound_pcmlock();
-      
-      audio_samples = (LR_SOUNDRATE / LR_SCREENFPS);
-      if (src) {
-         satuation_s16(dst, src, audio_samples);
-         sound_pcmunlock(src);
-      }
-      else {
-         ZeroMemory(dst, audio_samples);
-      }
-      
-      audio_batch_cb(audio_buffer, audio_samples);
-   }
-   */
    
    video_cb(FrameBuffer, LR_SCREENWIDTH, LR_SCREENHEIGHT, LR_SCREENWIDTH * 2/*Pitch*/);
 }
@@ -214,6 +190,9 @@ bool retro_load_game(const struct retro_game_info *game)
    file_setcd(np2path);//set current directory
    
    initload();
+   
+   np2cfg.delayms = 0;//retroarch will handle the audio latency
+   
    TRACEINIT();
    if(fontmng_init() != SUCCESS){
       printf("Font init failed.\n");

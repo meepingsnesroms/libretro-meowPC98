@@ -11,8 +11,6 @@
 #include "ext/externalchipmanager.h"
 #endif
 
-#include "libretro_exports.h"
-
 typedef struct {
 	BOOL     opened;
 } SOUNDMNG;
@@ -26,16 +24,21 @@ UINT soundmng_create(UINT rate, UINT ms) {
       printf("Invalid uddio rate:%d Moo\n", rate);
       abort();
    }
+   if(ms != 0){
+      printf("Invalid latency setting:%d\n", ms);
+      abort();
+   }
    
-   UINT s = rate * ms / (NSNDBUF * 1000);
-   UINT samples = 1;
+   //UINT s = rate * ms / (NSNDBUF * 1000);
+   //UINT s = (rate / 60) * ms;
+   UINT s = rate / 60;
+   UINT samples = rate ;
    while(s > samples) {
       samples <<= 1;
    }
    
    printf("Samples:%d\n", samples);
    
-   audio_paused = false;
 #if defined(VERMOUTH_LIB)
    cmvermouth_load(rate);
 #endif
@@ -46,7 +49,6 @@ void soundmng_destroy(void)
 {
    if (soundmng.opened) {
       soundmng.opened = FALSE;
-      audio_paused = true;
    }
 }
 
@@ -54,7 +56,6 @@ void soundmng_play(void)
 {
    if (soundmng.opened)
    {
-      audio_paused = false;
 #if defined(SUPPORT_EXTERNALCHIP)
       CExternalChipManager::GetInstance()->Mute(false);
 #endif
@@ -65,7 +66,6 @@ void soundmng_stop(void)
 {
    if (soundmng.opened)
    {
-      audio_paused = true;
 #if defined(SUPPORT_EXTERNALCHIP)
       CExternalChipManager::GetInstance()->Mute(true);
 #endif

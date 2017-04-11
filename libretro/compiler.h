@@ -112,7 +112,6 @@ typedef bool BOOL;
 
 #define	VERMOUTH_LIB
 
-#define	SOUNDRESERVE	100
 #define	SUPPORT_SWSEEKSND
 
 #define	SCREEN_BPP		16
@@ -160,6 +159,7 @@ typedef bool BOOL;
 
 //this is only used for threading
 //#define  SOUND_CRITICAL
+//#define	SOUNDRESERVE	100
 
 //this is not a debug build
 //#define	SUPPORT_MEMDBG32
