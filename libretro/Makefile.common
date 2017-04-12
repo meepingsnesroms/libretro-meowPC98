@@ -10,23 +10,24 @@ INCFLAGS += -I$(NP2_PATH) \
 	-I$(NP2_PATH)/fdd \
 	-I$(NP2_PATH)/font \
 	-I$(NP2_PATH)/generic \
-	-I$(NP2_PATH)/i286c \
+	-I$(NP2_PATH)/i386c \
+	-I$(NP2_PATH)/i386c/ia32 \
+	-I$(NP2_PATH)/i386c/ia32/instructions \
+	-I$(NP2_PATH)/i386c/ia32/instructions/fpu \
 	-I$(NP2_PATH)/io \
 	-I$(NP2_PATH)/mem \
 	-I$(NP2_PATH)/sound \
 	-I$(NP2_PATH)/trap \
 	-I$(NP2_PATH)/vram \
-	-I$(NP2_PATH)/zlib \
 	-I$(NP2_PATH)/libretro \
    -I$(NP2_PATH)/libretro/shim \
 	-I$(NP2_PATH)/libretro/libretro-common/include
 
-#	-I$(NP2_PATH)/i386c \
-#	-I$(NP2_PATH)/i386c/ia32 \
-#	-I$(NP2_PATH)/i386c/ia32/instructions \
-#	-I$(NP2_PATH)/i386c/ia32/instructions/fpu \
+#	-I$(NP2_PATH)/zlib \
+#	-I$(NP2_PATH)/i286c \
 
 SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
+		$(NP2_PATH)/libretro/keyboardtranslate.c \
 		$(NP2_PATH)/libretro/libretro-common/compat/compat_strcasestr.c \
 		$(NP2_PATH)/libretro/libretro-common/compat/compat_strl.c \
 		$(NP2_PATH)/libretro/libretro-common/compat/compat_posix_string.c \
@@ -52,7 +53,10 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(wildcard $(NP2_PATH)/fdd/*.c) \
 		$(wildcard $(NP2_PATH)/font/*.c) \
 		$(wildcard $(NP2_PATH)/generic/*.c) \
-		$(wildcard $(NP2_PATH)/i286c/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/ia32/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/ia32/instructions/*.c) \
+		$(NP2_PATH)/i386c/ia32/instructions/fpu/fpemul.c \
 		$(wildcard $(NP2_PATH)/io/*.c) \
 		$(wildcard $(NP2_PATH)/lio/*.c) \
 		$(wildcard $(NP2_PATH)/mem/*.c) \
@@ -61,13 +65,10 @@ SOURCES_C := $(NP2_PATH)/libretro/libretro.c \
 		$(wildcard $(NP2_PATH)/sound/vermouth/*.c) \
 		$(wildcard $(NP2_PATH)/trap/*.c) \
 		$(wildcard $(NP2_PATH)/vram/*.c) \
-		$(wildcard $(NP2_PATH)/zlib/*.c) \
 		$(wildcard $(NP2_PATH)/libretro/shim/*.c)
 
-#		$(wildcard $(NP2_PATH)/i386c/*.c) \
-#		$(wildcard $(NP2_PATH)/i386c/ia32/*.c) \
-#		$(wildcard $(NP2_PATH)/i386c/ia32/instructions/*.c) \
-#		$(NP2_PATH)/i386c/ia32/instructions/fpu/fpemul.c \
+#		$(wildcard $(NP2_PATH)/zlib/*.c) \
+#		$(wildcard $(NP2_PATH)/i286c/*.c) \
 
 SOURCES_CXX := $(NP2_PATH)/libretro/shim/soundmng.cpp
 

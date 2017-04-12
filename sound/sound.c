@@ -11,13 +11,10 @@
 #include "sndcsec.h"
 #include "beep.h"
 #include "soundmng.h"
-#if defined(SUPPORT_WAVEREC)
-#include "common/wavefile.h"
-#endif	/* defined(SUPPORT_WAVEREC) */
 
 #include "libretro_exports.h"
 
-	SOUNDCFG	soundcfg;
+SOUNDCFG	soundcfg;
 
 
 #define	STREAM_CBMAX	16
@@ -33,9 +30,6 @@ typedef struct {
 	UINT	samples;
 	UINT	reserve;
 	UINT	remain;
-#if defined(SUPPORT_WAVEREC)
-	WAVEFILEH rec;
-#endif	/* defined(SUPPORT_WAVEREC) */
 	CBTBL	*cbreg;
 	CBTBL	cb[STREAM_CBMAX];
 } SNDSTREAM;
@@ -69,148 +63,9 @@ static void streamprepare(UINT samples) {
 		//sndstream.ptr += count * 2;
       
       satuation_s16(fixed_samples, sndstream.ptr, count * 2);//* 2 for both l and r channels
-      audio_batch_cb(fixed_samples, count);
+      audio_batch_cb(fixed_samples, count * 2);
 	}
 }
-
-
-#if defined(SUPPORT_WAVEREC)
-// ---- wave rec
-
-/**
- * Starts recording
- * @param[in] lpFilename The filename
- * @retval SUCCESS If succeeded
- * @retval FAILURE If failed
- */
-BRESULT sound_recstart(const OEMCHAR *lpFilename)
-{
-	WAVEFILEH rec;
-
-	sound_recstop();
-	if (sndstream.buffer == NULL)
-	{
-		return FAILURE;
-	}
-	rec = wavefile_create(lpFilename, soundcfg.rate, 16, 2);
-	sndstream.rec = rec;
-	if (rec)
-	{
-		return SUCCESS;
-	}
-	return FAILURE;
-}
-
-/**
- * Stops recording
- */
-void sound_recstop(void)
-{
-	WAVEFILEH rec;
-
-	rec = sndstream.rec;
-	sndstream.rec = NULL;
-	wavefile_close(rec);
-}
-
-/**
- * is recording?
- * @retval TRUE Yes
- */
-BOOL sound_isrecording(void)
-{
-	return (sndstream.rec != NULL) ? TRUE : FALSE;
-}
-
-/**
- * write
- * @param[in] samples The count of samples
- */
-static void streamfilewrite(UINT nSamples)
-{
-	UINT nCount;
-	SINT32 buf32[2 * 512];
-	CBTBL *cb;
-	UINT8 buf[2 * 512][2];
-	UINT r;
-	UINT i;
-	SINT32 nSample;
-
-	while (nSamples)
-	{
-		nCount = min(nSamples, 512);
-		memset(buf32, 0, nCount * 2 * sizeof(buf32[0]));
-		cb = sndstream.cb;
-		while (cb < sndstream.cbreg)
-		{
-			cb->cbfn(cb->hdl, buf32, nCount);
-			cb++;
-		}
-		r = min(sndstream.remain, nCount);
-		if (r)
-		{
-			memcpy(sndstream.ptr, buf32, r * 2 * sizeof(buf32[0]));
-			sndstream.ptr += r * 2;
-			sndstream.remain -= r;
-		}
-		for (i = 0; i < nCount * 2; i++)
-		{
-			nSample = buf32[i];
-			if (nSample > 32767)
-			{
-				nSample = 32767;
-			}
-			else if (nSample < -32768)
-			{
-				nSample = -32768;
-			}
-			// little endian‚È‚Ì‚Å satuation_s16‚ÍŽg‚¦‚È‚¢
-			buf[i][0] = (UINT8)nSample;
-			buf[i][1] = (UINT8)(nSample >> 8);
-		}
-		wavefile_write(sndstream.rec, buf, nCount * 2 * sizeof(buf[0]));
-		nSamples -= nCount;
-	}
-}
-
-/**
- * fill
- * @param[in] samples The count of samples
- */
-static void filltailsample(UINT nCount)
-{
-	SINT32 *ptr;
-	UINT nOrgSize;
-	SINT32 nSampleL;
-	SINT32 nSampleR;
-
-	nCount = min(sndstream.remain, nCount);
-	if (nCount)
-	{
-		ptr = sndstream.ptr;
-		nOrgSize = (UINT)((ptr - sndstream.buffer) / 2);
-		if (nOrgSize == 0)
-		{
-			nSampleL = 0;
-			nSampleR = 0;
-		}
-		else
-		{
-			nSampleL = *(ptr - 2);
-			nSampleR = *(ptr - 1);
-		}
-		sndstream.ptr += nCount * 2;
-		sndstream.remain -= nCount;
-		do
-		{
-			ptr[0] = nSampleL;
-			ptr[1] = nSampleR;
-			ptr += 2;
-		} while (--nCount);
-	}
-}
-#endif	/* defined(SUPPORT_WAVEREC) */
-
 
 // ----
 
@@ -270,9 +125,6 @@ scre_err1:
 void sound_destroy(void) {
 
 	if (sndstream.buffer) {
-#if defined(SUPPORT_WAVEREC)
-		sound_recstop();
-#endif	/* defined(SUPPORT_WAVEREC) */
 		soundmng_stop();
 		streamreset();
 		soundmng_destroy();
@@ -351,13 +203,7 @@ void sound_sync(void) {
 		return;
 	}
 	SNDCSEC_ENTER;
-#if defined(SUPPORT_WAVEREC)
-	if (sndstream.rec) {
-		streamfilewrite(length);
-	}
-	else
-#endif	/* defined(SUPPORT_WAVEREC) */
-		streamprepare(length);
+   streamprepare(length);
 	soundcfg.lastclock += length * soundcfg.clockbase / soundcfg.hzbase;
 	beep_eventreset();
 	SNDCSEC_LEAVE;
@@ -383,14 +229,7 @@ const SINT32 *ret;
 	ret = sndstream.buffer;
 	if (ret) {
 		SNDCSEC_ENTER;
-		if (sndstream.remain > sndstream.reserve)
-#if defined(SUPPORT_WAVEREC)
-			if (sndstream.rec) {
-				filltailsample(sndstream.remain - sndstream.reserve);
-			}
-			else
-#endif	/* defined(SUPPORT_WAVEREC) */
-		{
+		if (sndstream.remain > sndstream.reserve) {
 			streamprepare(sndstream.remain - sndstream.reserve);
 			soundcfg.lastclock = CPU_CLOCK + CPU_BASECLOCK - CPU_REMCLOCK;
 			beep_eventreset();
@@ -420,36 +259,3 @@ void sound_pcmunlock(const SINT32 *hdl) {
 		locks--;
 	}
 }
-
-/*
-inline uint64_t cust_abs(int64_t inval){
-   if(inval < 0){
-      return (uint64_t)(-inval);//make positive
-   }
-   return (uint64_t)inval;//leave as is
-}
-*/
-/*
-uint16_t fixed_samples[44100 * 10];
-
-void libretro_extract_samples(uint32_t samples){
-   
-   
-   CBTBL	*cb = sndstream.cb;
-   UINT	count = samples;
-   
-   ZeroMemory(sndstream.ptr, count * 2 * sizeof(SINT32));
-   while(cb < sndstream.cbreg) {
-      cb->cbfn(cb->hdl, sndstream.ptr, count);
-      cb++;
-   }
-   //sndstream.ptr += count * 2;
-   //sndstream.remain -= count;
-   
-   satuation_s16(fixed_samples, sndstream.ptr, samples);
-   
-   
-   audio_buffer = fixed_samples;
-   audio_samples = samples;
-}
-*/

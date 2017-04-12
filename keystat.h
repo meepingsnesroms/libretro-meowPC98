@@ -1,7 +1,7 @@
 
 #if 0
 enum {
-	NKEY_ESC			= 0x00,
+	NKEY_ESC          = 0x00,
 	NKEY_1				= 0x01,
 	NKEY_2				= 0x02,
 	NKEY_3				= 0x03,
@@ -14,10 +14,10 @@ enum {
 	NKEY_9				= 0x09,
 	NKEY_0				= 0x0a,
 	NKEY_MINUS			= 0x0b,
-	NKEY_CIRCUMFLEX		= 0x0c,
-	NKEY_YEN			= 0x0d,
+	NKEY_CIRCUMFLEX	= 0x0c,
+	NKEY_YEN          = 0x0d,
 	NKEY_BACKSPACE		= 0x0e,
-	NKEY_TAB			= 0x0f,
+	NKEY_TAB          = 0x0f,
 
 	NKEY_Q				= 0x10,
 	NKEY_W				= 0x11,
@@ -56,16 +56,16 @@ enum {
 	NKEY_M				= 0x2f,
 
 	NKEY_COMMA			= 0x30,
-	NKEY_DOT			= 0x31,
+	NKEY_DOT          = 0x31,
 	NKEY_SLASH			= 0x32,
-	NKEY_UNDERSCORE		= 0x33,
+	NKEY_UNDERSCORE	= 0x33,
 	NKEY_SPACE			= 0x34,
 	NKEY_XFER			= 0x35,
 	NKEY_ROLLUP			= 0x36,
 	NKEY_ROLLDOWN		= 0x37,
 
-	NKEY_INS			= 0x38,
-	NKEY_DEL			= 0x39,
+	NKEY_INS          = 0x38,
+	NKEY_DEL          = 0x39,
 	NKEY_UP				= 0x3a,
 	NKEY_LEFT			= 0x3b,
 	NKEY_RIGHT			= 0x3c,
@@ -93,11 +93,11 @@ enum {
 
 	NKEY_KP_DOT			= 0x50,
 	NKEY_NFER			= 0x51,
-	NKEY_VF1			= 0x52,
-	NKEY_VF2			= 0x53,
-	NKEY_VF3			= 0x54,
-	NKEY_VF4			= 0x55,
-	NKEY_VF5			= 0x56,
+	NKEY_VF1          = 0x52,
+	NKEY_VF2          = 0x53,
+	NKEY_VF3          = 0x54,
+	NKEY_VF4          = 0x55,
+	NKEY_VF5          = 0x56,
 
 	NKEY_STOP			= 0x60,
 	NKEY_COPY			= 0x61,
@@ -111,7 +111,7 @@ enum {
 	NKEY_F7				= 0x68,
 	NKEY_F8				= 0x69,
 	NKEY_F9				= 0x6a,
-	NKEY_F10			= 0x6b,
+	NKEY_F10          = 0x6b,
 
 	NKEY_SHIFT			= 0x70,
 	NKEY_CAPS			= 0x71,
@@ -127,9 +127,9 @@ enum {
 	NKEY_USER			= 0x90,
 	NKEY_USERKEYS		= 2,
 
-	NKEYREF_uPD8255		= 0xf7,
+	NKEYREF_uPD8255	= 0xf7,
 	NKEYREF_USER		= 0xf8,
-	NKEYREF_SOFTKBD		= 0xf9,
+	NKEYREF_SOFTKBD	= 0xf9,
 	NKEYREF_NC			= 0xff
 };
 

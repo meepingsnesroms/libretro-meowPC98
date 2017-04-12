@@ -115,6 +115,7 @@ typedef bool BOOL;
 #define	SUPPORT_SWSEEKSND
 
 #define	SCREEN_BPP		16
+#define	SUPPORT_16BPP
 
 #define  TRACE
 
@@ -125,7 +126,7 @@ typedef bool BOOL;
 
 #define	SUPPORT_CRT31KHZ
 #define	SUPPORT_SWSEEKSND
-//#define  SUPPORT_PC9821
+#define  SUPPORT_PC9821
 
 #if defined(SUPPORT_PC9821)
 #define	CPUCORE_IA32
@@ -150,9 +151,7 @@ typedef bool BOOL;
 #define	SUPPORT_ROMEO
 
 #define  SUPPORT_ARC
-#define  SUPPORT_ZLIB
 
-#define	SUPPORT_16BPP
 #define	SUPPORT_NORMALDISP
 
 //unused paramaters
@@ -164,9 +163,10 @@ typedef bool BOOL;
 //this is not a debug build
 //#define	SUPPORT_MEMDBG32
 
-//retroarch does its own recording
+//retroarch does these on its own
 //#define  SUPPORT_WAVEREC
 //#define  SUPPORT_RECVIDEO
+//#define  SUPPORT_ZLIB
 
 //the emulator must be self contained to work with retroarch
 //#define	SUPPORT_EXTERNALCHIP

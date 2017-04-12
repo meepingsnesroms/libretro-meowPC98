@@ -23,41 +23,41 @@
 #include "soundmng.h"
 #include "sysmng.h"
 #include "font.h"
-
-void updateInput(){
-   //void keystat_keydown(REG8 ref);
-   //void keystat_keyup(REG8 ref);
-}
+#include "keyboardtranslate.h"
 
 static retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
 static retro_input_poll_t poll_cb = NULL;
 static retro_input_state_t input_cb = NULL;
-static retro_audio_sample_t audio_cb = NULL;
 static retro_environment_t environ_cb = NULL;
-
 
 uint16_t   FrameBuffer[LR_SCREENWIDTH * LR_SCREENHEIGHT];
 retro_audio_sample_batch_t audio_batch_cb = NULL;
 
-void *retro_get_memory_data(unsigned type)
-{
-   return NULL;
+void updateInput(){
+   
+   poll_cb();
+   
+   uint32_t i;
+   for (i=0; i < keys_needed; i++)
+      if (input_cb(0, RETRO_DEVICE_KEYBOARD, 0, keys_to_poll[i])){
+         send_libretro_key_down(keys_to_poll[i]);
+      }
+      else {
+         send_libretro_key_down(keys_to_poll[i]);
+      }
 }
 
-size_t retro_get_memory_size(unsigned type)
-{
-   return 0;
-}
+//dummy functions
+void *retro_get_memory_data(unsigned type){return NULL;}
+size_t retro_get_memory_size(unsigned type){return 0;}
+void retro_set_audio_sample(retro_audio_sample_t cb){}
+bool retro_load_game_special(unsigned game_type, const struct retro_game_info *info, size_t num_info){return false;}
+void retro_unload_game (void){}
 
 void retro_set_video_refresh(retro_video_refresh_t cb)
 {
    video_cb = cb;
-}
-
-void retro_set_audio_sample(retro_audio_sample_t cb)
-{
-   audio_cb = cb;
 }
 
 void retro_set_input_poll(retro_input_poll_t cb)
@@ -116,6 +116,8 @@ void retro_init (void)
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
+   
+   init_lr_key_to_pc98();
 }
 
 void retro_deinit(void)
@@ -221,19 +223,6 @@ bool retro_load_game(const struct retro_game_info *game)
    pccore_reset();
    
    return true;
-}
-
-bool retro_load_game_special(
-  unsigned game_type,
-  const struct retro_game_info *info, size_t num_info
-)
-{
-   return false;
-}
-
-void retro_unload_game (void)
-{
-
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
