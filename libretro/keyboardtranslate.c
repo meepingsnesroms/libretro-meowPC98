@@ -85,6 +85,7 @@ static const LRKCNV lrcnv101[] =
 };
 
 static UINT8 pc98key[0xFFFF];
+static bool key_states[0xFFFF];
 uint16_t keys_to_poll[500];
 uint16_t keys_needed;
 
@@ -98,22 +99,29 @@ void init_lr_key_to_pc98(){
       keys_to_poll[i] = lrcnv101[i].lrkey;
    }
    
+   for (i = 0; i < 0xFFFF; i++)
+   {
+      key_states[i] = false;
+   }
+   
    keys_needed = SDL_arraysize(lrcnv101);
 }
 
 void send_libretro_key_down(uint16_t key){
    UINT8	data = pc98key[key];
-   if (data != NC)
+   if (data != NC && !key_states[key])
    {
       keystat_keydown(data);
+      key_states[key] = true;
    }
 }
 
 void send_libretro_key_up(uint16_t key){
    UINT8	data = pc98key[key];
-   if (data != NC)
+   if (data != NC && key_states[key])
    {
       keystat_keyup(data);
+      key_states[key] = false;
    }
 }
 

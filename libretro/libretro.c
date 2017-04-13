@@ -44,7 +44,7 @@ void updateInput(){
          send_libretro_key_down(keys_to_poll[i]);
       }
       else {
-         send_libretro_key_down(keys_to_poll[i]);
+         send_libretro_key_up(keys_to_poll[i]);
       }
 }
 
