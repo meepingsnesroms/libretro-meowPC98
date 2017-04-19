@@ -10,8 +10,8 @@
 
 #define LR_CORENAME        "MeowPC98"
 #define LR_LIBVERSION      "v0.0001"
-//#define LR_VALIDFILEEXT    "fdd|thd|nhd|hdi|vhd"
-#define LR_VALIDFILEEXT    "cfg"
+#define LR_VALIDFILEEXT    "fdd|thd|nhd|hdi|vhd"
+//#define LR_VALIDFILEEXT    "cfg"
 #define LR_NEEDFILEPATH    true
 #define LR_BLOCKARCEXTRACT false
 #define LR_REQUIRESROM     false
