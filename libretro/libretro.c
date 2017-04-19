@@ -34,6 +34,10 @@ static retro_environment_t environ_cb = NULL;
 uint16_t   FrameBuffer[LR_SCREENWIDTH * LR_SCREENHEIGHT];
 retro_audio_sample_batch_t audio_batch_cb = NULL;
 
+char* get_file_ext(char* filepath){
+   return filepath + strlen(filepath) - 3;
+}
+
 void updateInput(){
    
    poll_cb();
@@ -174,12 +178,10 @@ void retro_cheat_reset(void)
 void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
    //no cheats on this core
-} 
+}
 
 bool retro_load_game(const struct retro_game_info *game)
 {
-   if (!game)
-      return false;
    
    //get system dir
    const char* syspath = 0;
@@ -194,6 +196,33 @@ bool retro_load_game(const struct retro_game_info *game)
    initload();
    
    np2cfg.delayms = 0;//retroarch will handle the audio latency
+   
+#define FILETYPE(x) if(strcmp(get_file_ext(game->path), x) == 0)
+   if(game){
+      printf("PATH:%s\n", game->path);
+      printf("EXT:%s\n", get_file_ext(game->path));
+      FILETYPE("hdi"){
+         //SASI hdd
+         diskdrv_setsxsi(0 /*drive_num*/, game->path);
+      }
+      FILETYPE("vhd"){
+         //SASI hdd
+         diskdrv_setsxsi(0 /*drive_num*/, game->path);
+      }
+      FILETYPE("thd"){
+         //SASI hdd
+         diskdrv_setsxsi(0 /*drive_num*/, game->path);
+      }
+      FILETYPE("nhd"){
+         //SASI hdd
+         diskdrv_setsxsi(0 /*drive_num*/, game->path);
+      }
+      FILETYPE("fdd"){
+         //floppy disk
+         diskdrv_setfdd(0, game->path, 0/*read_only*/);
+      }
+   }
+#undef FILETYPE(x)
    
    TRACEINIT();
    if(fontmng_init() != SUCCESS){
@@ -220,6 +249,8 @@ bool retro_load_game(const struct retro_game_info *game)
    S98_init();
    
    scrndraw_redraw();
+   
+   pccore_cfgupdate();
    pccore_reset();
    
    return true;
