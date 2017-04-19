@@ -126,6 +126,7 @@ void retro_init (void)
 
 void retro_deinit(void)
 {
+   pccore_cfgupdate();
    pccore_term();
    S98_trash();
    soundmng_deinitialize();
@@ -195,7 +196,14 @@ bool retro_load_game(const struct retro_game_info *game)
    
    initload();
    
-   np2cfg.delayms = 0;//retroarch will handle the audio latency
+   //retroarch will handle the audio latency
+   np2cfg.delayms = 0;
+   
+   strcpy(np2cfg.fontfile, np2path);
+   strcat(np2cfg.fontfile, "font.bmp");
+   
+   strcpy(np2cfg.biospath, np2path);
+   strcat(np2cfg.biospath, "BIOS.ROM");
    
 #define FILETYPE(x) if(strcmp(get_file_ext(game->path), x) == 0)
    if(game){
@@ -249,8 +257,6 @@ bool retro_load_game(const struct retro_game_info *game)
    S98_init();
    
    scrndraw_redraw();
-   
-   pccore_cfgupdate();
    pccore_reset();
    
    return true;

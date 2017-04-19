@@ -23,7 +23,13 @@ FILEH file_open_rb(const char *path) {
 
 FILEH file_create(const char *path) {
 
-   filestream_write_file(path, NULL /*data*/, 0 /*size*/);
+#if 0
+   if(!path_is_valid(path)){
+      //create file
+      filestream_write_file(path, NULL /*data*/, 0 /*size*/);
+   }
+#endif
+   
    return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
 }
 
@@ -55,8 +61,10 @@ UINT file_getsize(FILEH handle) {
 
 short file_attr(const char *path) {
 
+   short attrs = 0;
+   
    if (path_is_directory(path)) {
-      return(FILEATTR_DIRECTORY);
+      attrs |= FILEATTR_DIRECTORY;
    }
    
    return(0);
