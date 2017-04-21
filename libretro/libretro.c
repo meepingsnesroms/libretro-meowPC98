@@ -13,7 +13,6 @@
 #include "libretro.h"
 #include "libretro_params.h"
 
-
 #include "compiler.h"//required to prevent missing type errors
 #include "pccore.h"
 #include "keystat.h"
@@ -80,8 +79,8 @@ void retro_set_environment(retro_environment_t cb)
    
    environ_cb = cb;
    
-   bool no_rom = !LR_REQUIRESROM;
-   environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
+   //bool no_rom = !LR_REQUIRESROM;
+   //environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
    
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
       log_cb = logging.log;
@@ -191,7 +190,12 @@ bool retro_load_game(const struct retro_game_info *game)
    if(!worked)abort();
    
    strcpy(np2path, syspath);
+#ifdef _WIN32
+   strcat(np2path, "\\np2\\");
+#else 
    strcat(np2path, "/np2/");
+#endif
+
    file_setcd(np2path);//set current directory
    
    initload();
@@ -204,7 +208,7 @@ bool retro_load_game(const struct retro_game_info *game)
    
    strcpy(np2cfg.biospath, np2path);
    strcat(np2cfg.biospath, "BIOS.ROM");
-   
+
 #define FILETYPE(x) if(strcmp(get_file_ext(game->path), x) == 0)
    if(game){
       printf("PATH:%s\n", game->path);

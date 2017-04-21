@@ -155,8 +155,11 @@ file_delete(const OEMCHAR *path)
 short
 file_dircreate(const OEMCHAR *path)
 {
-
+#if defined(WIN32)
+	return((short)mkdir(path));
+#else
 	return (short)mkdir(path, 0777);
+#endif
 }
 
 
