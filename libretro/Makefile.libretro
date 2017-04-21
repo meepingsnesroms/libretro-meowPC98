@@ -171,6 +171,21 @@ else ifeq ($(platform), emscripten)
 	STATIC_LINKING = 1
 	COMMONFLAGS += -DEMSCRIPTEN
 
+else ifeq ($(platform), wincross64)
+
+   AR = x86_64-w64-mingw32-ar
+   CC = x86_64-w64-mingw32-gcc
+   CXX = x86_64-w64-mingw32-g++ 
+   CFLAGS += -D__WIN32__ -DHAVE_SNPRINTF -DHAVE_VSNPRINTF -D__USE_MINGW_ANSI_STDIO=1 -DDEBUG_MAIN=1 -DDEBUG_CMDLINE=1 -DHAVE_NETWORK 
+
+#   CFLAGS += -mno-ms-bitfields
+# -DX64_WINDOWS_ABI
+   TARGET := $(TARGET_NAME)_libretro.dll
+   LDFLAGS += --shared -static-libgcc -static-libstdc++ -Wl,--version-script=link.T -L/usr/x86_64-w64-mingw32/lib
+
+LDFLAGS += -lws2_32 -luser32 -lwinmm -ladvapi32 -lshlwapi -lwsock32 -lws2_32 -lpsapi -liphlpapi -lshell32 -luserenv -lmingw32 -shared -lgcc -lm -lmingw32
+
+
 else
 	CXXFLAGS += -mno-ms-bitfields
 	TARGET := $(TARGET_NAME)_libretro.dll
