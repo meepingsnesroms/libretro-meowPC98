@@ -25,6 +25,11 @@
 #define	OSLANG_UTF8
 #define	OSLINEBREAK_CRLF
 #define  RESOURCE_US
+#ifdef __WIN32__
+#define	sigjmp_buf				jmp_buf
+#define	sigsetjmp(env, mask)	setjmp(env)
+#define	siglongjmp(env, val)	longjmp(env, val)
+#endif
 
 typedef	int32_t		SINT;
 typedef	uint32_t    UINT;
