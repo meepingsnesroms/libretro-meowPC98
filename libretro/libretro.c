@@ -106,9 +106,9 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.base_height  = LR_SCREENHEIGHT;
    info->geometry.max_width    = LR_SCREENWIDTH;
    info->geometry.max_height   = LR_SCREENHEIGHT;
-   info->geometry.aspect_ratio = LR_SCREENASPECT;
-   info->timing.fps            = LR_SCREENFPS;
-   info->timing.sample_rate    = LR_SOUNDRATE;
+   info->geometry.aspect_ratio = 4.0 / 3.0;//(float)LR_SCREENASPECT;
+   info->timing.fps            = 60.0;//LR_SCREENFPS;
+   info->timing.sample_rate    = 44100.0 ;//(float)LR_SOUNDRATE;
 }
 
 void retro_init (void)
@@ -141,14 +141,15 @@ void retro_reset (void)
 {
    pccore_reset();
 }
+extern  void playretro();
 
 void retro_run (void)
 {
    updateInput();
-   
+
    //emulate 1 frame
    pccore_exec(true /*draw*/);
-   
+   playretro();
    video_cb(FrameBuffer, LR_SCREENWIDTH, LR_SCREENHEIGHT, LR_SCREENWIDTH * 2/*Pitch*/);
 }
 
