@@ -1,19 +1,14 @@
-#include "streams/file_stream.h"
+#ifndef	NP2_X11_DOSIO_H__
+#define	NP2_X11_DOSIO_H__
 
-typedef  RFILE *				FILEH;
+#include <dirent.h>
+
+typedef FILE *			FILEH;
 #define	FILEH_INVALID		NULL
 
-#if defined(WIN32)
-#define	FLISTH				HANDLE
-#define	FLISTH_INVALID		(INVALID_HANDLE_VALUE)
-#else
-#define	FLISTH				long
-#define	FLISTH_INVALID		0
-#endif
-
-#define	FSEEK_SET	SEEK_SET
-#define	FSEEK_CUR	SEEK_CUR
-#define	FSEEK_END	SEEK_END
+#define	FSEEK_SET		SEEK_SET
+#define	FSEEK_CUR		SEEK_CUR
+#define	FSEEK_END		SEEK_END
 
 enum {
 	FILEATTR_READONLY	= 0x01,
@@ -25,10 +20,10 @@ enum {
 };
 
 enum {
-	FLICAPS_SIZE		= 0x0001,
-	FLICAPS_ATTR		= 0x0002,
-	FLICAPS_DATE		= 0x0004,
-	FLICAPS_TIME		= 0x0008
+	FLICAPS_SIZE		= (1 << 0),
+	FLICAPS_ATTR		= (1 << 1),
+	FLICAPS_DATE		= (1 << 2),
+	FLICAPS_TIME		= (1 << 3)
 };
 
 typedef struct {
@@ -44,6 +39,12 @@ typedef struct {
 } DOSTIME;
 
 typedef struct {
+	char	path[MAX_PATH];
+	DIR	*hdl;
+} _FLISTH, *FLISTH;
+#define	FLISTH_INVALID		NULL
+
+typedef struct {
 	UINT	caps;
 	UINT32	size;
 	UINT32	attr;
@@ -53,48 +54,45 @@ typedef struct {
 } FLINFO;
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* DOSIO:é–¢æ•°ã®æº–å‚™ */
+void dosio_init(void);
+void dosio_term(void);
 
-/* ƒtƒ@ƒCƒ‹‘€ì */
-FILEH file_open(const char *path);
-FILEH file_open_rb(const char *path);
-FILEH file_create(const char *path);
+/* ãƒ•ã‚¡ã‚¤ãƒ«æ“ä½œ */
+FILEH file_open(const OEMCHAR *path);
+FILEH file_open_rb(const OEMCHAR *path);
+FILEH file_create(const OEMCHAR *path);
 long file_seek(FILEH handle, long pointer, int method);
 UINT file_read(FILEH handle, void *data, UINT length);
 UINT file_write(FILEH handle, const void *data, UINT length);
 short file_close(FILEH handle);
 UINT file_getsize(FILEH handle);
 short file_getdatetime(FILEH handle, DOSDATE *dosdate, DOSTIME *dostime);
-short file_delete(const char *path);
-short file_attr(const char *path);
-short file_dircreate(const char *path);
+short file_delete(const OEMCHAR *path);
+short file_attr(const OEMCHAR *path);
+short file_dircreate(const OEMCHAR *path);
 
-/* ƒJƒŒƒ“ƒgƒtƒ@ƒCƒ‹‘€ì */
-void file_setcd(const char *exepath);
-char *file_getcd(const char *path);
-FILEH file_open_c(const char *path);
-FILEH file_open_rb_c(const char *path);
-FILEH file_create_c(const char *path);
-short file_delete_c(const char *path);
-short file_attr_c(const char *path);
+/* ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ã‚¡ã‚¤ãƒ«æ“ä½œ */
+void file_setcd(const OEMCHAR *exepath);
+char *file_getcd(const OEMCHAR *sjis);
+FILEH file_open_c(const OEMCHAR *sjis);
+FILEH file_open_rb_c(const OEMCHAR *sjis);
+FILEH file_create_c(const OEMCHAR *sjis);
+short file_delete_c(const OEMCHAR *sjis);
+short file_attr_c(const OEMCHAR *sjis);
 
-FLISTH file_list1st(const char *dir, FLINFO *fli);
+FLISTH file_list1st(const OEMCHAR *dir, FLINFO *fli);
 BRESULT file_listnext(FLISTH hdl, FLINFO *fli);
 void file_listclose(FLISTH hdl);
 
-#define file_cpyname(p, n, m)	milstr_ncpy(p, n, m)
-#define file_cmpname(p, n)		milstr_cmp(p, n)
-void file_catname(char *path, const char *name, int maxlen);
-char *file_getname(const char *path);
-void file_cutname(char *path);
-char *file_getext(const char *path);
-void file_cutext(char *path);
-void file_cutseparator(char *path);
-void file_setseparator(char *path, int maxlen);
+void file_cpyname(char *dst, const char *src, int maxlen);
+void file_catname(char *path, const char *sjis, int maxlen);
+BOOL file_cmpname(const char *path, const char *sjis);
+OEMCHAR *file_getname(const OEMCHAR *path);
+void file_cutname(OEMCHAR *path);
+OEMCHAR *file_getext(const OEMCHAR *path);
+void file_cutext(OEMCHAR *path);
+void file_cutseparator(OEMCHAR *path);
+void file_setseparator(OEMCHAR *path, int maxlen);
 
-#ifdef	__cplusplus
-}
-#endif
-
+#endif	/* NP2_X11_DOSIO_H__ */

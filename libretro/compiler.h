@@ -60,6 +60,8 @@ typedef bool BOOL;
 
 #define SIZE_VGA
 
+#define G_DIR_SEPARATOR "/"
+
 #ifndef	MAX_PATH
 #define	MAX_PATH	4096
 #endif

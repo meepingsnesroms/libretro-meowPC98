@@ -1,311 +1,445 @@
 #include "compiler.h"
+
 #include <sys/stat.h>
 #include <time.h>
+
+#include "codecnv/codecnv.h"
 #include "dosio.h"
 
-#include <streams/file_stream.h>
-#include <file/file_path.h>
-#include <retro_dirent.h>
-#include <retro_stat.h>
 
-static	char	curpath[MAX_PATH] = "./";
-static	char	*curfilep = curpath + 2;
+static OEMCHAR curpath[MAX_PATH];
+static OEMCHAR *curfilep = curpath;
 
-FILEH file_open(const char *path) {
+#define ISKANJI(c)	((((c) - 0xa1) & 0xff) < 0x5c)
 
-   return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
+
+void
+dosio_init(void)
+{
+
+	/* nothing to do */
 }
 
-FILEH file_open_rb(const char *path) {
+void
+dosio_term(void)
+{
 
-   return(filestream_open(path, RFILE_MODE_READ, 0));
+	/* nothing to do */
 }
 
-FILEH file_create(const char *path) {
+/* ãƒ•ã‚¡ã‚¤ãƒ«æ“ä½œ */
+FILEH
+file_open(const OEMCHAR *path)
+{
+	FILEH fh;
 
-#if 0
-   if(!path_is_valid(path)){
-      //create file
-      filestream_write_file(path, NULL /*data*/, 0 /*size*/);
-   }
-#endif
-   
-   return(filestream_open(path, RFILE_MODE_READ_WRITE, 0));
+	fh = fopen(path, "rb+");
+	if (fh)
+		return fh;
+	return fopen(path, "rb");
 }
 
-long file_seek(FILEH handle, long pointer, int method) {
+FILEH
+file_open_rb(const OEMCHAR *path)
+{
 
-   return(filestream_seek(handle, pointer, method));
+	return fopen(path, "rb");
 }
 
-UINT file_read(FILEH handle, void *data, UINT length) {
+FILEH
+file_create(const OEMCHAR *path)
+{
 
-	return((UINT)filestream_read(handle, data, length));
+	return fopen(path, "wb+");
 }
 
-UINT file_write(FILEH handle, const void *data, UINT length) {
+long
+file_seek(FILEH handle, long pointer, int method)
+{
 
-	return((UINT)filestream_write(handle, data, length));
+	fseek(handle, pointer, method);
+	return ftell(handle);
 }
 
-short file_close(FILEH handle) {
+UINT
+file_read(FILEH handle, void *data, UINT length)
+{
 
-   filestream_close(handle);
-	return(0);
+	return (UINT)fread(data, 1, length, handle);
 }
 
-UINT file_getsize(FILEH handle) {
+UINT
+file_write(FILEH handle, const void *data, UINT length)
+{
 
-	return(filestream_get_size(handle));
+	return (UINT)fwrite(data, 1, length, handle);
 }
 
-short file_attr(const char *path) {
+short
+file_close(FILEH handle)
+{
 
-   short attrs = 0;
-   
-   if (path_is_directory(path)) {
-      attrs |= FILEATTR_DIRECTORY;
-   }
-   
-   return(0);
+	fclose(handle);
+	return 0;
 }
 
-static BRESULT cnv_sttime(time_t *t, DOSDATE *dosdate, DOSTIME *dostime) {
+UINT
+file_getsize(FILEH handle)
+{
+	struct stat sb;
 
-struct tm	*ftime;
-
-	ftime = localtime(t);
-	if (ftime == NULL) {
-		return(FAILURE);
-	}
-	if (dosdate) {
-		dosdate->year = ftime->tm_year + 1900;
-		dosdate->month = ftime->tm_mon + 1;
-		dosdate->day = ftime->tm_mday;
-	}
-	if (dostime) {
-		dostime->hour = ftime->tm_hour;
-		dostime->minute = ftime->tm_min;
-		dostime->second = ftime->tm_sec;
-	}
-	return(SUCCESS);
+	if (fstat(fileno(handle), &sb) == 0)
+		return sb.st_size;
+	return 0;
 }
 
-short file_getdatetime(FILEH handle, DOSDATE *dosdate, DOSTIME *dostime) {
+short
+file_attr(const OEMCHAR *path)
+{
+	struct stat sb;
+	short attr;
 
-   /*
-   struct stat sb;
-
-	if (fstat(fileno(handle), &sb) == 0) {
-		if (cnv_sttime(&sb.st_mtime, dosdate, dostime) == SUCCESS) {
-			return(0);
+	if (stat(path, &sb) == 0) {
+		if (S_ISDIR(sb.st_mode)) {
+			return FILEATTR_DIRECTORY;
 		}
+		attr = 0;
+		if (!(sb.st_mode & S_IWUSR)) {
+			attr |= FILEATTR_READONLY;
+		}
+		return attr;
 	}
-	return(-1);
-   */
-   
-   time_t fake;
-   memset(fake, 0, sizeof(time_t));
-   cnv_sttime(&fake, dosdate, dostime);
-   return(0);
+	return -1;
 }
 
-short file_delete(const char *path) {
+static BRESULT
+cnvdatetime(struct stat *sb, DOSDATE *dosdate, DOSTIME *dostime)
+{
+	struct tm *ftime;
 
-	return(remove(path));
+	ftime = localtime(&sb->st_mtime);
+	if (ftime) {
+		if (dosdate) {
+			dosdate->year = ftime->tm_year + 1900;
+			dosdate->month = ftime->tm_mon + 1;
+			dosdate->day = ftime->tm_mday;
+		}
+		if (dostime) {
+			dostime->hour = ftime->tm_hour;
+			dostime->minute = ftime->tm_min;
+			dostime->second = ftime->tm_sec;
+		}
+		return SUCCESS;
+	}
+	return FAILURE;
 }
 
-short file_dircreate(const char *path) {
+short
+file_getdatetime(FILEH handle, DOSDATE *dosdate, DOSTIME *dostime)
+{
+	struct stat sb;
 
-	return((short)path_mkdir(path));
+	if ((fstat(fileno(handle), &sb) == 0)
+	 && (cnvdatetime(&sb, dosdate, dostime) == SUCCESS))
+		return 0;
+	return -1;
+}
+
+short
+file_delete(const OEMCHAR *path)
+{
+
+	return (short)unlink(path);
+}
+
+short
+file_dircreate(const OEMCHAR *path)
+{
+
+	return (short)mkdir(path, 0777);
 }
 
 
-/* ƒJƒŒƒ“ƒgƒtƒ@ƒCƒ‹‘€ì */
-void file_setcd(const char *exepath) {
+/* ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ã‚¡ã‚¤ãƒ«æ“ä½œ */
+void
+file_setcd(const OEMCHAR *exepath)
+{
 
-	file_cpyname(curpath, exepath, sizeof(curpath));
+	milstr_ncpy(curpath, exepath, sizeof(curpath));
 	curfilep = file_getname(curpath);
 	*curfilep = '\0';
 }
 
-char *file_getcd(const char *path) {
+char *
+file_getcd(const OEMCHAR *filename)
+{
 
-	file_cpyname(curfilep, path, NELEMENTS(curpath) - (UINT)(curfilep - curpath));
-	return(curpath);
+	*curfilep = '\0';
+	file_catname(curpath, filename, sizeof(curpath));
+	return curpath;
 }
 
-FILEH file_open_c(const char *path) {
+FILEH
+file_open_c(const OEMCHAR *filename)
+{
 
-	file_cpyname(curfilep, path, NELEMENTS(curpath) - (UINT)(curfilep - curpath));
-	return(file_open(curpath));
+	*curfilep = '\0';
+	file_catname(curpath, filename, sizeof(curpath));
+	return file_open(curpath);
 }
 
-FILEH file_open_rb_c(const char *path) {
+FILEH
+file_open_rb_c(const OEMCHAR *filename)
+{
 
-	file_cpyname(curfilep, path, NELEMENTS(curpath) - (UINT)(curfilep - curpath));
-	return(file_open_rb(curpath));
+	*curfilep = '\0';
+	file_catname(curpath, filename, sizeof(curpath));
+	return file_open_rb(curpath);
 }
 
-FILEH file_create_c(const char *path) {
+FILEH
+file_create_c(const OEMCHAR *filename)
+{
 
-	file_cpyname(curfilep, path, NELEMENTS(curpath) - (UINT)(curfilep - curpath));
-	return(file_create(curpath));
+	*curfilep = '\0';
+	file_catname(curpath, filename, sizeof(curpath));
+	return file_create(curpath);
 }
 
-short file_delete_c(const char *path) {
+short
+file_delete_c(const OEMCHAR *filename)
+{
 
-	file_cpyname(curfilep, path, NELEMENTS(curpath) - (UINT)(curfilep - curpath));
-	return(file_delete(curpath));
+	*curfilep = '\0';
+	file_catname(curpath, filename, sizeof(curpath));
+	return file_delete(curpath);
 }
 
-short file_attr_c(const char *path) {
+short
+file_attr_c(const OEMCHAR *filename)
+{
 
-	file_cpyname(curfilep, path, NELEMENTS(curpath) - (UINT)(curfilep - curpath));
-	return(file_attr(curpath));
+	*curfilep = '\0';
+	file_catname(curpath, filename, sizeof(curpath));
+	return file_attr(curpath);
 }
 
-FLISTH file_list1st(const char *dir, FLINFO *fli) {
+FLISTH
+file_list1st(const OEMCHAR *dir, FLINFO *fli)
+{
+	FLISTH ret;
 
-	DIR		*ret;
-
-	ret = opendir(dir);
+	ret = (FLISTH)_MALLOC(sizeof(_FLISTH), "FLISTH");
 	if (ret == NULL) {
-		goto ff1_err;
+		VERBOSE(("file_list1st: couldn't alloc memory (size = %d)", sizeof(_FLISTH)));
+		return FLISTH_INVALID;
+	}
+
+	milstr_ncpy(ret->path, dir, sizeof(ret->path));
+	file_setseparator(ret->path, sizeof(ret->path));
+	ret->hdl = opendir(ret->path);
+	VERBOSE(("file_list1st: opendir(%s)", ret->path));
+	if (ret->hdl == NULL) {
+		VERBOSE(("file_list1st: opendir failure"));
+		_MFREE(ret);
+		return FLISTH_INVALID;
 	}
 	if (file_listnext((FLISTH)ret, fli) == SUCCESS) {
-		return((FLISTH)ret);
+		return (FLISTH)ret;
 	}
-	closedir(ret);
-
-ff1_err:
-	return(FLISTH_INVALID);
+	VERBOSE(("file_list1st: file_listnext failure"));
+	closedir(ret->hdl);
+	_MFREE(ret);
+	return FLISTH_INVALID;
 }
 
-BRESULT file_listnext(FLISTH hdl, FLINFO *fli) {
+BRESULT
+file_listnext(FLISTH hdl, FLINFO *fli)
+{
+	OEMCHAR buf[MAX_PATH];
+	struct dirent *de;
+	struct stat sb;
 
-struct dirent	*de;
-struct stat		sb;
-
-	de = readdir((DIR *)hdl);
+	de = readdir(hdl->hdl);
 	if (de == NULL) {
-		return(FAILURE);
+		VERBOSE(("file_listnext: readdir failure"));
+		return FAILURE;
 	}
-	if (fli) {
-		memset(fli, 0, sizeof(*fli));
-		fli->caps = FLICAPS_ATTR;
-		fli->attr = (de->d_type & DT_DIR) ? FILEATTR_DIRECTORY : 0;
 
-		if (stat(de->d_name, &sb) == 0) {
-			fli->caps |= FLICAPS_SIZE;
-			fli->size = (UINT)sb.st_size;
-			if (!(sb.st_mode & S_IWUSR)) {
-				fli->attr |= FILEATTR_READONLY;
-			}
-			if (cnv_sttime(&sb.st_mtime, &fli->date, &fli->time) == SUCCESS) {
-				fli->caps |= FLICAPS_DATE | FLICAPS_TIME;
+	milstr_ncpy(buf, hdl->path, sizeof(buf));
+	milstr_ncat(buf, de->d_name, sizeof(buf));
+	if (stat(buf, &sb) != 0) {
+		VERBOSE(("file_listnext: stat failure. (path = %s)", buf));
+		return FAILURE;
+	}
+
+	fli->caps = FLICAPS_SIZE | FLICAPS_ATTR | FLICAPS_DATE | FLICAPS_TIME;
+	fli->size = sb.st_size;
+	fli->attr = 0;
+	if (S_ISDIR(sb.st_mode)) {
+		fli->attr |= FILEATTR_DIRECTORY;
+	}
+	if (!(sb.st_mode & S_IWUSR)) {
+		fli->attr |= FILEATTR_READONLY;
+	}
+	cnvdatetime(&sb, &fli->date, &fli->time);
+	milstr_ncpy(fli->path, de->d_name, sizeof(fli->path));
+	VERBOSE(("file_listnext: success"));
+	return SUCCESS;
+}
+
+void
+file_listclose(FLISTH hdl)
+{
+
+	if (hdl) {
+		closedir(hdl->hdl);
+		_MFREE(hdl);
+	}
+}
+
+static int
+euckanji1st(const OEMCHAR *str, int pos)
+{
+	int ret;
+	int c;
+
+	for (ret = 0; pos >= 0; ret ^= 1) {
+		c = (UINT8)str[pos--];
+		if (!ISKANJI(c))
+			break;
+	}
+	return ret;
+}
+
+void
+file_cpyname(OEMCHAR *dst, const OEMCHAR *src, int maxlen)
+{
+	int i;
+
+	if (maxlen-- > 0) {
+		for (i = 0; i < maxlen && src[i] != '\0'; i++) {
+			dst[i] = src[i];
+		}
+		if (i > 0) {
+			if (euckanji1st(src, i-1)) {
+				i--;
 			}
 		}
-		milstr_ncpy(fli->path, de->d_name, sizeof(fli->path));
+		dst[i] = '\0';
 	}
-	return(SUCCESS);
 }
 
-void file_listclose(FLISTH hdl) {
+void
+file_catname(OEMCHAR *path, const OEMCHAR *filename, int maxlen)
+{
 
-	closedir((DIR *)hdl);
-}
-
-void file_catname(char *path, const char *name, int maxlen) {
-
-	int		csize;
-
-	while(maxlen > 0) {
+	for (; maxlen > 0; path++, maxlen--) {
 		if (*path == '\0') {
 			break;
 		}
-		path++;
-		maxlen--;
 	}
-	file_cpyname(path, name, maxlen);
-	while((csize = milstr_charsize(path)) != 0) {
-		if ((csize == 1) && (*path == '\\')) {
-			*path = '/';
+	if (maxlen > 0) {
+		milstr_ncpy(path, filename, maxlen);
+		for (; *path != '\0'; path++) {
+			if (!ISKANJI(*path)) {
+				path++;
+				if (*path == '\0') {
+					break;
+				}
+			} else if (((*path - 0x41) & 0xff) < 26) {
+				*path |= 0x20;
+			} else if (*path == '\\') {
+				*path = G_DIR_SEPARATOR;
+			}
 		}
-		path += csize;
 	}
 }
 
-char *file_getname(const char *path) {
+BOOL
+file_cmpname(const OEMCHAR *path, const OEMCHAR *path2)
+{
 
-const char	*ret;
-	int		csize;
+	return strcasecmp(path, path2);
+}
 
-	ret = path;
-	while((csize = milstr_charsize(path)) != 0) {
-		if ((csize == 1) && (*path == '/')) {
+OEMCHAR *
+file_getname(const OEMCHAR *path)
+{
+	const OEMCHAR *ret;
+
+	for (ret = path; *path != '\0'; path++) {
+		if (ISKANJI(*path)) {
+			path++;
+			if (*path == '\0') {
+				break;
+			}
+		} else if (*path == G_DIR_SEPARATOR) {
 			ret = path + 1;
 		}
-		path += csize;
 	}
-	return((char *)ret);
+	return (OEMCHAR *)ret;
 }
 
-void file_cutname(char *path) {
-
-	char	*p;
+void
+file_cutname(OEMCHAR *path)
+{
+	OEMCHAR *p;
 
 	p = file_getname(path);
 	*p = '\0';
 }
 
-char *file_getext(const char *path) {
+OEMCHAR *
+file_getext(const OEMCHAR *path)
+{
+	const OEMCHAR *p, *q;
 
-const char	*p;
-const char	*q;
-
-	p = file_getname(path);
-	q = NULL;
-	while(*p != '\0') {
+	for (p = file_getname(path), q = NULL; *p != '\0'; p++) {
 		if (*p == '.') {
 			q = p + 1;
 		}
-		p++;
 	}
 	if (q == NULL) {
 		q = p;
 	}
-	return((char *)q);
+	return (OEMCHAR *)q;
 }
 
-void file_cutext(char *path) {
+void
+file_cutext(OEMCHAR *path)
+{
+	OEMCHAR *p, *q;
 
-	char	*p;
-	char	*q;
-
-	p = file_getname(path);
-	q = NULL;
-	while(*p != '\0') {
+	for (p = file_getname(path), q = NULL; *p != '\0'; p++) {
 		if (*p == '.') {
 			q = p;
 		}
-		p++;
 	}
 	if (q != NULL) {
 		*q = '\0';
 	}
 }
 
-void file_cutseparator(char *path) {
-   
-	int pos = (int)strlen(path) - 1;
-	if ((pos > 0) && (path[pos] == '/') && ((pos != 1) || (path[0] != '.'))) {
-      path[pos] = '\0';
+void
+file_cutseparator(OEMCHAR *path)
+{
+	int pos;
+
+	pos = strlen(path) - 1;
+	if ((pos > 0) && (path[pos] == G_DIR_SEPARATOR)) {
+		path[pos] = '\0';
 	}
 }
 
-void file_setseparator(char *path, int maxlen) {
+void
+file_setseparator(OEMCHAR *path, int maxlen)
+{
+	int pos;
 
-   fill_pathname_slash(path, maxlen);
+	pos = strlen(path);
+	if ((pos) && (path[pos-1] != G_DIR_SEPARATOR) && ((pos + 2) < maxlen)) {
+		path[pos++] = G_DIR_SEPARATOR;
+		path[pos] = '\0';
+	}
 }
-
