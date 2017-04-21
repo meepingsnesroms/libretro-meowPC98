@@ -10,7 +10,7 @@
 #if defined(SUPPORT_EXTERNALCHIP)
 #include "ext/externalchipmanager.h"
 #endif
-
+#include "libretro_exports.h"
 typedef struct {
 	BOOL     opened;
 } SOUNDMNG;
@@ -18,7 +18,23 @@ typedef struct {
 #define NSNDBUF 1
 
 static	SOUNDMNG	soundmng;
+extern "C" {
+void playretro(){
+	const SINT32	*src;
+	int length=735*4;
+	SINT16		dst[735*2];
+	src = sound_pcmlock();
 
+	if (src) {
+		satuation_s16(dst, src, length);
+		sound_pcmunlock(src);
+	}
+	else {
+		ZeroMemory(dst, length);
+	}
+	audio_batch_cb(dst,length/4);
+}
+}
 UINT soundmng_create(UINT rate, UINT ms) {
    if(rate != 44100){
       printf("Invalid uddio rate:%d Moo\n", rate);
