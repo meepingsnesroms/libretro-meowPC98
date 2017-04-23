@@ -187,53 +187,82 @@ bool retro_load_game(const struct retro_game_info *game)
    //get system dir
    const char* syspath = 0;
    char np2path[4096];
+   char tmppath[4096];   
+   bool load_floppy=false;
    bool worked = environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &syspath);
    if(!worked)abort();
    
    strcpy(np2path, syspath);
+
 #ifdef _WIN32
-   strcat(np2path, "\\np2\\");
+   strcat(np2path, "\\np2");
 #else 
-   strcat(np2path, "/np2/");
+   strcat(np2path, "/np2");
 #endif
 
-   file_setcd(np2path);//set current directory
+   sprintf(tmppath,"%s%c",np2path,G_DIR_SEPARATOR);
+
+   //file_setcd(np2path);//set current directory
    
-   initload();
+   //initload();
    
    //retroarch will handle the audio latency
    np2cfg.delayms = 0;
    
+   sprintf(np2cfg.fontfile,"%s%cfont.bmp",np2path,G_DIR_SEPARATOR);
+/*
    strcpy(np2cfg.fontfile, np2path);
+   strcpy(np2cfg.fontfile, G_DIR_SEPARATOR);
    strcat(np2cfg.fontfile, "font.bmp");
-   
+*/   
+   sprintf(np2cfg.biospath,"%s%c",np2path,G_DIR_SEPARATOR);
+/*
    strcpy(np2cfg.biospath, np2path);
-   strcat(np2cfg.biospath, "BIOS.ROM");
+   strcat(np2cfg.biospath, G_DIR_SEPARATOR);
+*/
+   dosio_init();
 
-#define FILETYPE(x) if(strcmp(get_file_ext(game->path), x) == 0)
+//   file_setcd(np2path);
+   file_setcd(tmppath);
+   initload();
+   rand_setseed((SINT32)time(NULL));
+
+#define FILETYPE(x,X) if(strcmp(get_file_ext(game->path), x) == 0 || strcmp(get_file_ext(game->path), X) == 0)
    if(game){
       printf("PATH:%s\n", game->path);
       printf("EXT:%s\n", get_file_ext(game->path));
-      FILETYPE("hdi"){
+      FILETYPE("hdi","HDI"){
          //SASI hdd
          diskdrv_setsxsi(0 /*drive_num*/, game->path);
       }
-      FILETYPE("vhd"){
+      FILETYPE("vhd","VHD"){
          //SASI hdd
          diskdrv_setsxsi(0 /*drive_num*/, game->path);
       }
-      FILETYPE("thd"){
+      FILETYPE("thd","THD"){
          //SASI hdd
          diskdrv_setsxsi(0 /*drive_num*/, game->path);
       }
-      FILETYPE("nhd"){
+      FILETYPE("nhd","NHD"){
          //SASI hdd
          diskdrv_setsxsi(0 /*drive_num*/, game->path);
       }
+#if 0
       FILETYPE("fdd"){
          //floppy disk
          diskdrv_setfdd(0, game->path, 0/*read_only*/);
       }
+#endif
+      if(  strcmp(get_file_ext(game->path), "fdi") == 0 ||\
+		strcmp(get_file_ext(game->path), "FDI") == 0 ||\
+		strcmp(get_file_ext(game->path), "fdd") == 0 ||\
+		strcmp(get_file_ext(game->path), "FDD") == 0 ||\
+		strcmp(get_file_ext(game->path), "d88") == 0 ||\
+		strcmp(get_file_ext(game->path), "D88") == 0 )
+      {
+          	load_floppy=true;   
+      }
+
    }
 #undef FILETYPE(x)
    
@@ -263,7 +292,9 @@ bool retro_load_game(const struct retro_game_info *game)
    
    scrndraw_redraw();
    pccore_reset();
-   
+
+   if(load_floppy)diskdrv_readyfdd(0, game->path, 0/*read_only*/);
+
    return true;
 }
 
