@@ -16,7 +16,7 @@ else ifneq ($(findstring win,$(UNAME)),)
 endif
 endif
 
-TARGET_NAME := meow_pc98
+TARGET_NAME := nekop2
 
 # system platform
 system_platform = unix
