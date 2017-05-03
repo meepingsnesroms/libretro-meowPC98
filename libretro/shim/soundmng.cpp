@@ -1,6 +1,5 @@
 #include "compiler.h"
 #include "soundmng.h"
-#include <algorithm>
 #include "parts.h"
 #include "sound.h"
 #if defined(VERMOUTH_LIB)
