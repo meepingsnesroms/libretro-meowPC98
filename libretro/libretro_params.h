@@ -8,7 +8,7 @@
 
 #define LR_SOUNDRATE    44100.0
 
-#define LR_CORENAME        "MeowPC98"
+#define LR_CORENAME        "Neko Project II"
 #define LR_LIBVERSION      "v0.0001"
 #define LR_VALIDFILEEXT    "fdd|thd|nhd|hdi|vhd"
 #define LR_NEEDFILEPATH    true
