@@ -45,6 +45,9 @@ typedef	uint64_t		UINT64;
 
 typedef  int32_t*    INTPTR;
 
+typedef	signed char		CHAR;
+typedef	unsigned char	BYTE;
+
 typedef bool BOOL;
 #ifndef	TRUE
 #define	TRUE	true

@@ -1,5 +1,7 @@
 
 #ifdef __cplusplus
+void joymng_sync();
+
 extern "C" {
 #endif
 

@@ -24,10 +24,14 @@
 #include "font.h"
 #include "keyboardtranslate.h"
 
+#define SOUNDRATE 44100.0
+#define SNDSZ 735
+signed short soundbuf[1024*2];
+
 static retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
 static retro_input_poll_t poll_cb = NULL;
-static retro_input_state_t input_cb = NULL;
+retro_input_state_t input_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 
 uint16_t   FrameBuffer[LR_SCREENWIDTH * LR_SCREENHEIGHT];
@@ -40,7 +44,9 @@ char* get_file_ext(char* filepath){
 void updateInput(){
    
    poll_cb();
-   
+
+   joymng_sync();
+
    uint32_t i;
    for (i=0; i < keys_needed; i++)
       if (input_cb(0, RETRO_DEVICE_KEYBOARD, 0, keys_to_poll[i])){
@@ -149,7 +155,8 @@ void retro_run (void)
 
    //emulate 1 frame
    pccore_exec(true /*draw*/);
-   playretro();
+//   playretro();
+   sound_play_cb(NULL, NULL,SNDSZ*4);
    video_cb(FrameBuffer, LR_SCREENWIDTH, LR_SCREENHEIGHT, LR_SCREENWIDTH * 2/*Pitch*/);
 }
 
