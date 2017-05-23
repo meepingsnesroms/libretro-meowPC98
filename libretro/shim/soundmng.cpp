@@ -57,18 +57,19 @@ UINT soundmng_create(UINT rate, UINT ms) {
       printf("Invalid audio rate:%d Moo\n", rate);
       abort();
    }
+/*
    if(ms == 0){
       printf("Default ms used ms:%d \n", ms);
       ms=250;
    }
-
+*/
 	UINT	s;
 	UINT	samples;
 
 	if (soundmng.opened) {
 		goto smcre_err1;
 	}
-
+/*
 	s = rate * ms / (NSNDBUF * 1000);
 	samples = 1;
 	while(s > samples) {
@@ -76,6 +77,9 @@ UINT soundmng_create(UINT rate, UINT ms) {
 	}
 	soundmng.nsndbuf = 0;
 	soundmng.samples = samples;
+*/
+	soundmng.nsndbuf = 0;
+	soundmng.samples = samples = 1024;
 
 	soundmng.opened = TRUE;
    
