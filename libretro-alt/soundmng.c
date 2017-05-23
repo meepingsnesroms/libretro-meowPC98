@@ -1,5 +1,6 @@
 #include "compiler.h"
 #include "soundmng.h"
+
 #include "parts.h"
 #include "sound.h"
 #if defined(VERMOUTH_LIB)
@@ -9,7 +10,6 @@
 #if defined(SUPPORT_EXTERNALCHIP)
 #include "ext/externalchipmanager.h"
 #endif
-#include "libretro_exports.h"
 
 #define	NSNDBUF				2
 
@@ -25,13 +25,13 @@ typedef struct {
 } SOUNDMNG;
 
 static	SOUNDMNG	soundmng;
-extern "C" {
- void sound_play_cb(void *userdata, UINT8 *stream, int len) {
+
+
+void sound_play_cb(void *userdata, UINT8 *stream, int len) {
 
 	int			length;
 	SINT16		*dst;
 const SINT32	*src;
-
 	length = min(len, (int)(soundmng.samples * 2 * sizeof(SINT16)));
 	dst = soundbuf;//soundmng.buf[soundmng.nsndbuf];
 	src = sound_pcmlock();
@@ -42,53 +42,65 @@ const SINT32	*src;
 	else {
 		ZeroMemory(dst, length);
 	}
-	//memset(stream, 0, len);
-	//memset(soundbuf,len);
-   	audio_batch_cb(soundbuf,len/4);
-//	SDL_MixAudio(stream, (UINT8 *)dst, length, SDL_MIX_MAXVOLUME);
+	//SDL_memset(stream, 0, len);
+	//SDL_MixAudio(stream, (UINT8 *)dst, length, SDL_MIX_MAXVOLUME);
+        audio_batch_cb(soundbuf,len/4);
 	soundmng.nsndbuf = (soundmng.nsndbuf + 1) % NSNDBUF;
 	(void)userdata;
-}
 }
 
 UINT soundmng_create(UINT rate, UINT ms) {
 
-   if(rate != 44100){
-      printf("Invalid audio rate:%d Moo\n", rate);
-      abort();
-   }
-/*
-   if(ms == 0){
-      printf("Default ms used ms:%d \n", ms);
-      ms=250;
-   }
-*/
-	UINT	s;
-	UINT	samples;
+	//SDL_AudioSpec	fmt;
+	UINT			s;
+	UINT			samples;
+	//SINT16			*tmp;
 
 	if (soundmng.opened) {
 		goto smcre_err1;
 	}
+/*
+	if (SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+		fprintf(stderr, "Error: SDL_Init: %s\n", SDL_GetError());
+		goto smcre_err1;
+	}
+*/
+
 /*
 	s = rate * ms / (NSNDBUF * 1000);
 	samples = 1;
 	while(s > samples) {
 		samples <<= 1;
 	}
-	soundmng.nsndbuf = 0;
-	soundmng.samples = samples;
 */
 	soundmng.nsndbuf = 0;
 	soundmng.samples = samples = 1024;
 
-	soundmng.opened = TRUE;
-   
-   printf("Samples:%d\n", samples);
-   
-#if defined(VERMOUTH_LIB)
-   cmvermouth_load(rate);
-#endif
+/*
+	for (s=0; s<NSNDBUF; s++) {
+		tmp = (SINT16 *)_MALLOC(samples * 2 * sizeof(SINT16), "buf");
+		if (tmp == NULL) {
+			goto smcre_err2;
+		}
+		soundmng.buf[s] = tmp;
+		ZeroMemory(tmp, samples * 2 * sizeof(SINT16));
+	}
 
+	ZeroMemory(&fmt, sizeof(fmt));
+	fmt.freq = rate;
+	fmt.format = AUDIO_S16SYS;
+	fmt.channels = 2;
+	fmt.samples = samples;
+	fmt.callback = sound_play_cb;
+	if (SDL_OpenAudio(&fmt, NULL) < 0) {
+		fprintf(stderr, "Error: SDL_OpenAudio: %s\n", SDL_GetError());
+		return(FAILURE);
+	}
+*/
+#if defined(VERMOUTH_LIB)
+	cmvermouth_load(rate);
+#endif
+	soundmng.opened = TRUE;
 	return(samples);
 /*
 smcre_err2:
@@ -102,34 +114,50 @@ smcre_err2:
 */
 smcre_err1:
 	return(0);
-
 }
 
-void soundmng_destroy(void)
-{
-   if (soundmng.opened) {
-      soundmng.opened = FALSE;
-   }
+void soundmng_destroy(void) {
+
+	int		i;
+	SINT16	*tmp;
+
+	if (soundmng.opened) {
+		soundmng.opened = FALSE;
+/*
+		SDL_PauseAudio(1);
+		SDL_CloseAudio();
+		for (i=0; i<NSNDBUF; i++) {
+			tmp = soundmng.buf[i];
+			soundmng.buf[i] = NULL;
+			_MFREE(tmp);
+		}
+*/
+#if defined(VERMOUTH_LIB)
+//		cmvermouth_unload();
+#endif
+	}
 }
 
 void soundmng_play(void)
 {
-   if (soundmng.opened)
-   {
+	if (soundmng.opened)
+	{
+		//SDL_PauseAudio(0);
 #if defined(SUPPORT_EXTERNALCHIP)
-      CExternalChipManager::GetInstance()->Mute(false);
+		CExternalChipManager::GetInstance()->Mute(false);
 #endif
-   }
+	}
 }
 
 void soundmng_stop(void)
 {
-   if (soundmng.opened)
-   {
+	if (soundmng.opened)
+	{
+		//SDL_PauseAudio(1);
 #if defined(SUPPORT_EXTERNALCHIP)
-      CExternalChipManager::GetInstance()->Mute(true);
+		CExternalChipManager::GetInstance()->Mute(true);
 #endif
-   }
+	}
 }
 
 

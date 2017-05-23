@@ -1,0 +1,56 @@
+NP2_PATH := ..
+
+INCFLAGS := -I$(NP2_PATH) \
+	-I$(NP2_PATH)/libretro-alt \
+	-I$(NP2_PATH)/cbus \
+	-I$(NP2_PATH)/codecnv \
+	-I$(NP2_PATH)/common \
+	-I$(NP2_PATH)/embed \
+	-I$(NP2_PATH)/embed/menu \
+	-I$(NP2_PATH)/embed/menubase \
+	-I$(NP2_PATH)/fdd \
+	-I$(NP2_PATH)/font \
+	-I$(NP2_PATH)/generic \
+	-I$(NP2_PATH)/i386c \
+	-I$(NP2_PATH)/i386c/ia32 \
+	-I$(NP2_PATH)/i386c/ia32/instructions \
+	-I$(NP2_PATH)/i386c/ia32/instructions/fpu \
+	-I$(NP2_PATH)/io \
+	-I$(NP2_PATH)/mem \
+	-I$(NP2_PATH)/sound \
+	-I$(NP2_PATH)/trap \
+	-I$(NP2_PATH)/vram 
+
+SOURCES_C :=  \
+		$(NP2_PATH)/calendar.c \
+		$(NP2_PATH)/debugsub386.c \
+		$(NP2_PATH)/keystat.c \
+		$(NP2_PATH)/nevent.c \
+		$(NP2_PATH)/pccore.c \
+		$(NP2_PATH)/statsave.c \
+		$(NP2_PATH)/timing.c \
+		$(wildcard $(NP2_PATH)/bios/*.c) \
+		$(wildcard $(NP2_PATH)/cbus/*.c) \
+		$(wildcard $(NP2_PATH)/codecnv/*.c) \
+		$(wildcard $(NP2_PATH)/common/*.c) \
+		$(wildcard $(NP2_PATH)/embed/*.c) \
+		$(wildcard $(NP2_PATH)/embed/menu/*.c) \
+		$(wildcard $(NP2_PATH)/embed/menubase/*.c) \
+		$(wildcard $(NP2_PATH)/fdd/*.c) \
+		$(wildcard $(NP2_PATH)/font/*.c) \
+		$(wildcard $(NP2_PATH)/generic/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/ia32/*.c) \
+		$(wildcard $(NP2_PATH)/i386c/ia32/instructions/*.c) \
+		$(NP2_PATH)/i386c/ia32/instructions/fpu/fpemul.c \
+		$(wildcard $(NP2_PATH)/io/*.c) \
+		$(wildcard $(NP2_PATH)/lio/*.c) \
+		$(wildcard $(NP2_PATH)/libretro-alt/*.c) \
+		$(wildcard $(NP2_PATH)/mem/*.c) \
+		$(wildcard $(NP2_PATH)/sound/*.c) \
+		$(wildcard $(NP2_PATH)/sound/getsnd/*.c) \
+		$(wildcard $(NP2_PATH)/sound/vermouth/*.c) \
+		$(wildcard $(NP2_PATH)/trap/*.c) \
+		$(wildcard $(NP2_PATH)/vram/*.c) 
+
+
