@@ -34,7 +34,7 @@ ifeq ($(platform), win)
 	INCLUDES += -I Windows
 endif
 
-TARGET_NAME := nekop21
+TARGET_NAME := nekop2
 ENDIANNESS_DEFINES :=
 CORE_DIR := .
 
