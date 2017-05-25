@@ -84,6 +84,9 @@ static const LRKCNV lrcnv101[] =
 			//{0xa5,				0x0d}
 };
 
+/*! extend key */
+static const UINT8 f12keys[] = {0x61, 0x60, 0x4d, 0x4f};
+
 static UINT8 pc98key[0xFFFF];
 static bool key_states[0xFFFF];
 uint16_t keys_to_poll[500];
@@ -107,21 +110,59 @@ void init_lr_key_to_pc98(){
    keys_needed = SDL_arraysize(lrcnv101);
 }
 
+static UINT8 getf12key(void)
+{
+	UINT	key;
+
+	key = np2oscfg.F12KEY - 1;
+	if (key < SDL_arraysize(f12keys))
+	{
+		return f12keys[key];
+	}
+	else
+	{
+		return NC;
+	}
+}
+
 void send_libretro_key_down(uint16_t key){
+
    UINT8	data = pc98key[key];
+
+   if (key == RETROK_F12)
+   {
+	data = getf12key();
+   }
+   
    if (data != NC && !key_states[key])
    {
-      keystat_keydown(data);
+      keystat_senddata(data);//keystat_keydown(data);
       key_states[key] = true;
    }
 }
 
 void send_libretro_key_up(uint16_t key){
    UINT8	data = pc98key[key];
+
+   if (key == RETROK_F12)
+   {
+	data = getf12key();
+   }
+
    if (data != NC && key_states[key])
    {
-      keystat_keyup(data);
+      keystat_senddata((UINT8)(data | 0x80));//keystat_keyup(data);
       key_states[key] = false;
    }
+}
+
+void sdlkbd_resetf12(void)
+{
+	size_t i;
+
+	for (i = 0; i < SDL_arraysize(f12keys); i++)
+	{
+		keystat_forcerelease(f12keys[i]);
+	}
 }
 

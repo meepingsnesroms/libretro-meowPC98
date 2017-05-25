@@ -413,7 +413,7 @@ void update_input(void)
 				KEYP(i,i);
 			}
 
-		if(Core_Key_Sate[RETROK_F12] && Core_Key_Sate[RETROK_F12]!=Core_old_Key_Sate[RETROK_F12]  )
+		if(Core_Key_Sate[RETROK_F11] && Core_Key_Sate[RETROK_F11]!=Core_old_Key_Sate[RETROK_F11]  )
 			if (menuvram == NULL) {
 				sysmenu_menuopen(0, 0, 0);
 				mposx=0;mposy=0;

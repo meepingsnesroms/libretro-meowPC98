@@ -20,7 +20,7 @@ void scrnmng_setheight(int posy, int height);
 const SCRNSURF *scrnmng_surflock(void);
 void scrnmng_surfunlock(const SCRNSURF *surf);
 
-#define	scrnmng_isfullscreen()	(1)
+#define	scrnmng_isfullscreen()	(0)
 #define	scrnmng_haveextend()	(0)
 #define	scrnmng_getbpp()		(16)
 #define	scrnmng_allflash()		
