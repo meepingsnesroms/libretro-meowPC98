@@ -48,7 +48,12 @@ typedef  int32_t*    INTPTR;
 typedef	signed char		CHAR;
 typedef	unsigned char	BYTE;
 
+#ifdef _WIN32
+typedef int BOOL;
+#else
 typedef bool BOOL;
+#endif
+
 #ifndef	TRUE
 #define	TRUE	true
 #endif
