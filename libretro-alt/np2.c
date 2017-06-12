@@ -31,7 +31,7 @@ static	UINT		framemax = 1;
 
 static void usage(const char *progname) {
 
-	printf("Usage: %s [options]\n", progname);
+	printf("Usage: %s [options] [floppy1] [floppy2] [floppy3] [floppy4] [hdd1] [hdd2]\n", progname);
 	printf("\t--help   [-h]       : print this message\n");
 }
 
