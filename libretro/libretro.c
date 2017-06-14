@@ -406,12 +406,56 @@ void retro_set_environment(retro_environment_t cb)
    
    //bool no_rom = !LR_REQUIRESROM;
    //environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
-   
+
+   struct retro_variable variables[] = {
+      { "np2_clk_base" , "CPU Base Clock (auto-reset); 2.4576 MHz|1.9968 MHz" },
+      { "np2_clk_mult" , "CPU Clock Multiplier (auto-reset); 4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1|2|3" },
+      { "np2_ExMemory" , "RAM Size (auto-reset); 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1" },
+      { NULL, NULL },
+   };
+
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
       log_cb = logging.log;
    else
       log_cb = NULL;
    
+   cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
+}
+
+static void update_variables(void)
+{
+   struct retro_variable var = {0};
+
+   var.key = "np2_clk_base";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "1.9968 MHz") == 0)
+         np2cfg.baseclock = 1996800;
+      else
+         np2cfg.baseclock = 2457600;
+   }
+
+   var.key = "np2_clk_mult";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      np2cfg.multiple = atoi(var.value);
+   }
+
+   var.key = "np2_ExMemory";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      np2cfg.EXTMEM = atoi(var.value);
+   }
+   
+   initsave();
+   pccore_cfgupdate();
+   pccore_reset();
 
 }
 
@@ -444,7 +488,9 @@ void retro_init (void)
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
-   
+
+   update_variables();
+
    init_lr_key_to_pc98();
 }
 
@@ -466,10 +512,18 @@ void retro_run (void)
    if(firstcall)
    {
       pre_main(RPATH);
+      update_variables();
       mousemng_enable(MOUSEPROC_SYSTEM);
       firstcall=0;
       printf("INIT done\n");
       return;
+   }
+
+   bool updated = false;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+   {
+      update_variables();
    }
 
    updateInput();
