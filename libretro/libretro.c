@@ -408,9 +408,9 @@ void retro_set_environment(retro_environment_t cb)
    //environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
 
    struct retro_variable variables[] = {
-      { "np2_clk_base" , "CPU Base Clock (auto-reset); 2.4576 MHz|1.9968 MHz" },
-      { "np2_clk_mult" , "CPU Clock Multiplier (auto-reset); 4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1|2|3" },
-      { "np2_ExMemory" , "RAM Size (auto-reset); 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1" },
+      { "np2_clk_base" , "CPU Base Clock (Restart); 2.4576 MHz|1.9968 MHz" },
+      { "np2_clk_mult" , "CPU Clock Multiplier (Restart); 4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1|2|3" },
+      { "np2_ExMemory" , "RAM Size (Restart); 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1" },
       { NULL, NULL },
    };
 
@@ -454,8 +454,6 @@ static void update_variables(void)
    }
    
    initsave();
-   pccore_cfgupdate();
-   pccore_reset();
 
 }
 
@@ -513,6 +511,8 @@ void retro_run (void)
    {
       pre_main(RPATH);
       update_variables();
+      pccore_cfgupdate();
+      pccore_reset();
       mousemng_enable(MOUSEPROC_SYSTEM);
       firstcall=0;
       printf("INIT done\n");
