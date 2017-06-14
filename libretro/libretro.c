@@ -411,6 +411,7 @@ void retro_set_environment(retro_environment_t cb)
       { "np2_clk_base" , "CPU Base Clock (Restart); 2.4576 MHz|1.9968 MHz" },
       { "np2_clk_mult" , "CPU Clock Multiplier (Restart); 4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1|2|3" },
       { "np2_ExMemory" , "RAM Size (Restart); 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1" },
+      { "np2_skipline" , "Skipline Revisions; Full 255 lines|ON|OFF" },
       { NULL, NULL },
    };
 
@@ -452,7 +453,22 @@ static void update_variables(void)
    {
       np2cfg.EXTMEM = atoi(var.value);
    }
-   
+
+   var.key = "np2_skipline";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "OFF") == 0)
+         np2cfg.skipline = false;
+      else if (strcmp(var.value, "ON") == 0)
+         np2cfg.skipline = true;
+      else if (strcmp(var.value, "Full 255 lines") == 0){
+         np2cfg.skiplight = 255;
+         np2cfg.skipline = true;
+      }
+   }
+
    initsave();
 
 }
