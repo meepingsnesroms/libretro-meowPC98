@@ -298,7 +298,8 @@ void updateInput(){
          send_libretro_key_up(keys_to_poll[i]);
       }
 
-   if (input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11) && menukey==0){
+   if ((input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11) || 
+            input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)) && menukey==0){
 
       menukey=1; 
 
@@ -315,7 +316,8 @@ void updateInput(){
          scrndraw_redraw();
          menu_active=0;
       }
-   } else if ( !input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11)  && menukey==1)
+   } else if ( !(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11) || 
+            input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)) && menukey==1)
       menukey=0;
 
    if (menuvram == NULL && menu_active==1){
