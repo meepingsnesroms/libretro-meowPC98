@@ -279,6 +279,7 @@ void draw_cross(int x,int y) {
 
 static int lastx=320,lasty=200;
 static menukey=0;
+static menu_active=0;
 
 void updateInput(){
 
@@ -297,23 +298,33 @@ void updateInput(){
          send_libretro_key_up(keys_to_poll[i]);
       }
 
-   if (input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11) && menukey==0)
-   {
-	menukey=1; 
-	if (menuvram == NULL) {
+   if (input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11) && menukey==0){
 
-		sysmenu_menuopen(0, 0, 0);
-		mposx=0;mposy=0;
-		lastx=0;lasty=0;
-		mousemng_disable(MOUSEPROC_SYSTEM);
-	}
-	else {
-		menubase_close();
-		mousemng_enable(MOUSEPROC_SYSTEM);
-		memset(GuiBuffer,0,LR_SCREENWIDTH*LR_SCREENHEIGHT*2);
-	}
+      menukey=1; 
+
+      if (menuvram == NULL) {
+         sysmenu_menuopen(0, 0, 0);
+         mposx=0;mposy=0;
+         lastx=0;lasty=0;
+         mousemng_disable(MOUSEPROC_SYSTEM);
+         menu_active=1;
+      } else {
+         menubase_close();
+         mousemng_enable(MOUSEPROC_SYSTEM);
+         memset(GuiBuffer,0,LR_SCREENWIDTH*LR_SCREENHEIGHT*2);
+         scrndraw_redraw();
+         menu_active=0;
+      }
+   } else if ( !input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11)  && menukey==1)
+      menukey=0;
+
+   if (menuvram == NULL && menu_active==1){
+      menubase_close();
+      menu_active==0;
+      mousemng_enable(MOUSEPROC_SYSTEM);
+      memset(GuiBuffer,0,LR_SCREENWIDTH*LR_SCREENHEIGHT*2);
+      scrndraw_redraw();
    }
-   else if( !input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F11)  && menukey==1)menukey=0;
 
    static int mbL = 0, mbR = 0;
 
@@ -415,7 +426,7 @@ void retro_set_environment(retro_environment_t cb)
       { "np2_model" , "PC Model (Restart); VX|EPSON|VM" },
       { "np2_clk_base" , "CPU Base Clock (Restart); 2.4576 MHz|1.9968 MHz" },
       { "np2_clk_mult" , "CPU Clock Multiplier (Restart); 4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1|2|3" },
-      { "np2_ExMemory" , "RAM Size (Restart); 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|1" },
+      { "np2_ExMemory" , "RAM Size (Restart); 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|24|32|48|64|1" },
       { "np2_skipline" , "Skipline Revisions; Full 255 lines|ON|OFF" },
       { NULL, NULL },
    };
@@ -485,6 +496,7 @@ static void update_variables(void)
          np2cfg.skiplight = 255;
          np2cfg.skipline = true;
       }
+	  scrndraw_redraw();
    }
 
    initsave();
