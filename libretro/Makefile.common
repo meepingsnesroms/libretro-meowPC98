@@ -1,7 +1,7 @@
 
-NP2_PATH := ..
+NP2_PATH := $(CORE_DIR)/..
 
-INCFLAGS += -I$(NP2_PATH) \
+INCFLAGS := -I$(NP2_PATH) \
 	-I$(NP2_PATH)/cbus \
 	-I$(NP2_PATH)/common \
 	-I$(NP2_PATH)/embed \

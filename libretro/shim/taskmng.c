@@ -6,9 +6,7 @@
 #include	"menubase.h"
 #include	"sysmenu.h"
 
-#ifndef _WIN32
-#include "retro_miscellaneous.h"
-#endif
+#include <retro_miscellaneous.h>
 
 BOOL	task_avail;
 
@@ -106,15 +104,12 @@ void taskmng_rol(void) {
 BOOL taskmng_sleep(UINT32 tick) {
 
 	UINT32 base = GETTICK();
-	while((task_avail) && ((GETTICK() - base) < tick)) {
-		taskmng_rol();
-		//SDL_Delay(1);
-#if defined(_WIN32)
-   Sleep(1);
-#else
+   while((task_avail) && ((GETTICK() - base) < tick))
+   {
+      taskmng_rol();
+      //SDL_Delay(1);
       retro_sleep(1);
-#endif
-	}
+   }
 	return(task_avail);
 }
 

@@ -1,0 +1,156 @@
+
+DEBUG = 0
+GIT_VERSION := " $(shell git rev-parse --short HEAD)"
+
+ifeq ($(platform),)
+platform = unix
+ifeq ($(shell uname -a),)
+   platform = win
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+   platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+   platform = osx
+else ifneq ($(findstring win,$(shell uname -a)),)
+   platform = win
+endif
+endif
+
+# system platform
+system_platform = unix
+ifeq ($(shell uname -a),)
+	EXE_EXT = .exe
+	system_platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+	system_platform = osx
+	arch = intel
+ifeq ($(shell uname -p),powerpc)
+	arch = ppc
+endif
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+	system_platform = win
+endif
+
+ifeq ($(platform), win)
+	INCLUDES += -I Windows
+endif
+
+TARGET_NAME := nekop2
+ENDIANNESS_DEFINES :=
+CORE_DIR := .
+
+ifeq ($(platform), unix)
+	CFLAGS = -g -O2 
+	CXXFLAGS = -g -O2  -fno-merge-constants 
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+	FLAGS += -D__LINUX__
+else ifneq (,$(findstring osx,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro.dylib
+	fpic = -fPIC
+   SHARED := -dynamiclib
+
+else ifneq (,$(findstring ios,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro_ios.dylib
+	fpic = -fPIC
+	SHARED := -dynamiclib
+
+ifeq ($(IOSSDK),)
+   IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+endif
+
+	DEFINES := -DIOS
+	CC = cc -arch armv7 -isysroot $(IOSSDK)
+	CXX = c++ -arch armv7 -isysroot $(IOSSDK)
+ifeq ($(platform),ios9)
+CC     += -miphoneos-version-min=8.0
+CXXFLAGS += -miphoneos-version-min=8.0
+else
+CC     += -miphoneos-version-min=5.0
+CXXFLAGS += -miphoneos-version-min=5.0
+endif
+
+	# android arm
+else ifneq (,$(findstring android,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro_android.so
+	fpic = -fPIC
+	SHARED := -lstdc++ -llog -shared -Wl,--version-script=link.T -Wl,--no-undefined
+	CFLAGS +=  -g -O2
+	CXXFLAGS = -g -O2  -fno-merge-constants 
+	CC = arm-linux-androideabi-gcc
+	CXX = arm-linux-androideabi-g++
+	FLAGS += -D__LINUX__ -DARM -marm
+	# crosspi arm
+else ifneq (,$(findstring crosspi,$(platform)))
+	CC = arm-linux-gnueabihf-gcc
+	CXX = arm-linux-gnueabihf-g++
+	CC_AS = arm-linux-gnueabihf-as
+CPU_FLAGS += -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard
+	CFLAGS += -g -O2 
+	CXXFLAGS += -g -O2  -fno-merge-constants 
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+	FLAGS += -D__LINUX__ -DARM -marm
+	# cross Windows
+else ifeq ($(platform), wincross64)
+	TARGET := $(TARGET_NAME)_libretro.dll
+	AR = x86_64-w64-mingw32-ar
+	CC = x86_64-w64-mingw32-gcc
+	CXX = x86_64-w64-mingw32-g++ 
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+	LDFLAGS += -static-libgcc -static-libstdc++ 
+	EXTRA_LDF := -lwinmm -Wl,--export-all-symbols
+else
+	TARGET :=  $(TARGET_NAME)_libretro.dll
+	CC = gcc
+	CXX = g++
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+	LDFLAGS += -static-libgcc -static-libstdc++ 
+	EXTRA_LDF = -lwinmm -Wl,--export-all-symbols
+endif
+
+CDEBUGFLAGS+= 
+CDEBUGFLAGS+= 
+FLAGS += $(CDEBUGFLAGS)
+
+include $(CORE_DIR)/Makefile.common
+
+OBJECTS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o) $(SOURCES_S:.s=.o)
+
+all: $(TARGET)
+
+ifeq ($(DEBUG), 0)
+   FLAGS += -O3 -ffast-math -fomit-frame-pointer -DNDEBUG -DGIT_VERSION=\"$(GIT_VERSION)\"
+else
+   FLAGS += -O0 -g
+endif
+
+LDFLAGS +=  $(fpic) $(SHARED) $(EXTRA_LDF) -lm
+FLAGS   += $(INCFLAGS) 
+FLAGS +=  
+
+WARNINGS :=  
+	
+FLAGS += -D__LIBRETRO__ $(ENDIANNESS_DEFINES) $(WARNINGS) $(fpic) 
+
+CXXFLAGS += $(FLAGS) -fpermissive $(CPU_FLAGS)
+CFLAGS += $(FLAGS) -std=gnu99 $(CPU_FLAGS)
+
+
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+%.o: %.s
+	$(CXX) $(CFLAGS)  -c $^ -o $@
+
+clean:
+	rm -f $(TARGET) $(OBJECTS)
+
+.PHONY: clean

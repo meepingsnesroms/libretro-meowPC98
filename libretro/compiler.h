@@ -45,7 +45,16 @@ typedef	uint64_t		UINT64;
 
 typedef  int32_t*    INTPTR;
 
+typedef	unsigned char	BYTE;
+
+#ifdef _WIN32
+typedef int BOOL;
+typedef	char CHAR;
+#else
 typedef bool BOOL;
+typedef int8_t		CHAR;
+#endif
+
 #ifndef	TRUE
 #define	TRUE	true
 #endif
